@@ -1,0 +1,6 @@
+{
+  "name": "Ecological Race",
+  "description": "Panel de seguimiento en vivo de la cooperativa ecológica escolar y de reciclaje COMPITE POR EL PLANETA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

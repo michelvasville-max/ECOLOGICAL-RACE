@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Safety Net (default deny for unspecified paths)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions for validating common types
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    // 2. Instituciones Collection
+    match /instituciones/{institucionId} {
+      allow read: if true;
+      allow write: if isValidId(institucionId);
+    }
+
+    // 3. Aulas Collection
+    match /aulas/{aulaId} {
+      allow read: if true;
+      allow write: if isValidId(aulaId);
+    }
+
+    // 4. Registros Collection
+    match /registros/{registroId} {
+      allow read: if true;
+      allow write: if isValidId(registroId);
+    }
+
+    // 5. Comentarios Collection
+    match /comentarios/{comentarioId} {
+      allow read: if true;
+      allow write: if isValidId(comentarioId);
+    }
+
+    // 6. Equipo Collection
+    match /equipo/{equipoId} {
+      allow read: if true;
+      allow write: if isValidId(equipoId);
+    }
+
+    // 7. Proyecto Metadata Collection
+    match /proyecto_metadata/{metaId} {
+      allow read: if true;
+      allow write: if isValidId(metaId);
+    }
+  }
+}

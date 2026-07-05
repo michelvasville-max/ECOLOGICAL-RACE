@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 520" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="gradEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="gradTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d9488" />
+      <stop offset="100%" stop-color="#14b8a6" />
+    </linearGradient>
+    <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="gradBrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350f" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="gradLightBrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+
+  <!-- BACKGROUND WHITE SOFT CIRCLE -->
+  <circle cx="250" cy="230" r="195" fill="#ffffff" filter="drop-shadow(0px 8px 16px rgba(0,0,0,0.06))" />
+
+  <!-- MAIN RECYCLING ARROWS TRACK (CIRCULAR) -->
+  <!-- Outer green and teal recycling circle frame -->
+  <circle cx="250" cy="230" r="185" fill="none" stroke="#e2e8f0" stroke-width="8" />
+  <circle cx="250" cy="230" r="170" fill="none" stroke="url(#arrowGrad)" stroke-width="20" stroke-dasharray="1000" stroke-dashoffset="50" opacity="0.15" />
+
+  <!-- THREE RECYCLING ARROW PATHS -->
+  <!-- Arrow 1: Top-Right to Bottom (Plastic / Bottle) -->
+  <path d="M 370 140 A 160 160 0 0 1 390 310" fill="none" stroke="#10b981" stroke-width="16" stroke-linecap="round" />
+  <polygon points="390,310 375,295 405,295" fill="#10b981" transform="rotate(45, 390, 310)" />
+
+  <!-- Arrow 2: Bottom to Left (Paper / Document) -->
+  <path d="M 330 360 A 160 160 0 0 1 130 310" fill="none" stroke="#0d9488" stroke-width="16" stroke-linecap="round" />
+  <polygon points="130,310 115,295 145,295" fill="#0d9488" transform="rotate(165, 130, 310)" />
+
+  <!-- Arrow 3: Left to Top-Right (Aluminum / Can) -->
+  <path d="M 120 230 A 160 160 0 0 1 290 85" fill="none" stroke="#059669" stroke-width="16" stroke-linecap="round" />
+  <polygon points="290,85 275,70 305,70" fill="#059669" transform="rotate(285, 290, 85)" />
+
+  <!-- ICONS CONTAINERS (CIRCULAR WHITE BADGES) -->
+  <!-- Top Badge (Paper / Papel) -->
+  <g transform="translate(250, 70)">
+    <circle cx="0" cy="0" r="24" fill="#ffffff" stroke="#10b981" stroke-width="4" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))" />
+    <!-- Document Icon -->
+    <path d="M -8 -10 L 4 -10 L 10 -4 L 10 10 L -8 10 Z" fill="none" stroke="#047857" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M 4 -10 L 4 -4 L 10 -4" fill="none" stroke="#047857" stroke-width="2.5" stroke-linejoin="round" />
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="#047857" stroke-width="2" />
+    <line x1="-4" y1="4" x2="4" y2="4" stroke="#047857" stroke-width="2" />
+  </g>
+
+  <!-- Bottom-Right Badge (Plastic / Plástico) -->
+  <g transform="translate(385, 230)">
+    <circle cx="0" cy="0" r="24" fill="#ffffff" stroke="#0d9488" stroke-width="4" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))" />
+    <!-- Plastic Bottle Icon -->
+    <rect x="-5" y="-12" width="10" height="4" rx="1" fill="none" stroke="#0f766e" stroke-width="2.5" />
+    <path d="M -8 -8 L 8 -8 L 8 8 C 8 11 5 13 0 13 C -5 13 -8 11 -8 8 Z" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linejoin="round" />
+    <line x1="-8" y1="-2" x2="8" y2="-2" stroke="#0f766e" stroke-width="2" />
+    <line x1="-8" y1="3" x2="8" y2="3" stroke="#0f766e" stroke-width="2" />
+  </g>
+
+  <!-- Bottom-Left Badge (Aluminum / Aluminio) -->
+  <g transform="translate(115, 230)">
+    <circle cx="0" cy="0" r="24" fill="#ffffff" stroke="#059669" stroke-width="4" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.1))" />
+    <!-- Soda Can Icon -->
+    <rect x="-7" y="-11" width="14" height="22" rx="2" fill="none" stroke="#065f46" stroke-width="2.5" />
+    <ellipse cx="0" cy="-11" rx="7" ry="2.5" fill="none" stroke="#065f46" stroke-width="2" />
+    <ellipse cx="0" cy="11" rx="7" ry="2.5" fill="none" stroke="#065f46" stroke-width="2" />
+    <path d="M -3 -6 L 3 -6 M -4 -1 L 4 -1 M -3 4 L 3 4" stroke="#065f46" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- GREEN LEAVES AT THE BOTTOM -->
+  <g transform="translate(250, 390)">
+    <!-- Center Left Leaf -->
+    <path d="M 0 0 C -20 -15 -40 -10 -45 10 C -25 15 -10 5 0 0 Z" fill="#10b981" opacity="0.85" />
+    <path d="M 0 0 C -15 -5 -30 -2 -35 8" fill="none" stroke="#ffffff" stroke-width="1.5" />
+    <!-- Center Right Leaf -->
+    <path d="M 0 0 C 20 -15 40 -10 45 10 C 25 15 10 5 0 0 Z" fill="#059669" />
+    <path d="M 0 0 C 15 -5 30 -2 35 8" fill="none" stroke="#ffffff" stroke-width="1.5" />
+  </g>
+
+  <!-- CENTRAL MASCOT: "RACE" THE ONDULANT OOTER / NUTRIA -->
+  <g transform="translate(250, 220)">
+    <!-- Tail (Otter tail) -->
+    <path d="M -45 35 C -65 45 -85 30 -90 10 C -85 -5 -65 15 -45 25" fill="url(#gradBrown)" stroke="#451a03" stroke-width="2" />
+    
+    <!-- Left Leg (Background Running) -->
+    <ellipse cx="-15" cy="65" rx="12" ry="22" fill="#5c2e0b" transform="rotate(-30, -15, 65)" />
+    <ellipse cx="-18" cy="80" rx="8" ry="12" fill="#451a03" />
+
+    <!-- Body Torso (Athletic running pose) -->
+    <path d="M -45 10 C -45 -10 -15 -20 15 -15 C 30 -10 35 15 25 45 C 10 60 -25 55 -40 40 C -48 30 -45 20 -45 10 Z" fill="url(#gradBrown)" stroke="#451a03" stroke-width="3" />
+
+    <!-- Blue Athletic Tank Top Jersey -->
+    <path d="M -30 -5 C -25 -15 -10 -18 10 -14 C 20 -10 24 10 18 35 C 10 45 -15 45 -25 35 Z" fill="url(#gradBlue)" />
+    <!-- Jersey Trim (Teal/Green striped sides) -->
+    <path d="M -30 -5 C -28 10 -25 25 -25 35" fill="none" stroke="#34d399" stroke-width="3.5" />
+    <path d="M 10 -14 C 15 5 18 20 18 35" fill="none" stroke="#34d399" stroke-width="3.5" />
+    <!-- Big Yellow Letter 'E' or Eco Logo on Jersey -->
+    <path d="M -8 2 L 6 2 M -8 10 L 4 10 M -8 18 L 6 18 M -8 2 L -8 18" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Right Leg (Foreground running forward) -->
+    <g transform="translate(10, 50) rotate(45)">
+      <rect x="-10" y="0" width="20" height="40" rx="10" fill="url(#gradBrown)" stroke="#451a03" stroke-width="2" />
+      <ellipse cx="0" cy="35" rx="12" ry="7" fill="#451a03" />
+    </g>
+
+    <!-- Left Arm (Background swinging back) -->
+    <path d="M -35 -5 C -55 -15 -65 -30 -70 -25 C -70 -15 -50 -2 -35 -5" fill="#5c2e0b" stroke="#451a03" stroke-width="2" />
+
+    <!-- Neck & Head -->
+    <path d="M -15 -15 C -10 -25 10 -25 15 -15" fill="url(#gradBrown)" stroke="#451a03" stroke-width="2" />
+    
+    <!-- Otter Head -->
+    <circle cx="0" cy="-35" r="32" fill="url(#gradBrown)" stroke="#451a03" stroke-width="3" />
+
+    <!-- Otter Ears -->
+    <!-- Left Ear -->
+    <circle cx="-28" cy="-55" r="10" fill="#5c2e0b" stroke="#451a03" stroke-width="2.5" />
+    <circle cx="-28" cy="-55" r="6" fill="#f43f5e" opacity="0.6" />
+    <!-- Right Ear -->
+    <circle cx="28" cy="-55" r="10" fill="#5c2e0b" stroke="#451a03" stroke-width="2.5" />
+    <circle cx="28" cy="-55" r="6" fill="#f43f5e" opacity="0.6" />
+
+    <!-- Headband (Green running headband - athletic) -->
+    <path d="M -30 -42 C -10 -48 10 -48 30 -42" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" />
+    <path d="M -30 -42 C -10 -48 10 -48 30 -42" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-dasharray="6,4" />
+
+    <!-- Otter Cheeks / Muzzle -->
+    <ellipse cx="0" cy="-25" rx="16" ry="10" fill="#fef3c7" stroke="#451a03" stroke-width="2" />
+    <!-- Cute Whiskers dots -->
+    <circle cx="-6" cy="-25" r="1" fill="#451a03" />
+    <circle cx="-10" cy="-24" r="1" fill="#451a03" />
+    <circle cx="-8" cy="-27" r="1" fill="#451a03" />
+    <circle cx="6" cy="-25" r="1" fill="#451a03" />
+    <circle cx="10" cy="-24" r="1" fill="#451a03" />
+    <circle cx="8" cy="-27" r="1" fill="#451a03" />
+
+    <!-- Nose -->
+    <polygon points="0,-29 -5,-34 5,-34" fill="#1e293b" rx="2" stroke="#1e293b" stroke-linejoin="round" />
+
+    <!-- Big Cheerful Eyes -->
+    <!-- Left Eye -->
+    <circle cx="-11" cy="-38" r="6" fill="#ffffff" stroke="#451a03" stroke-width="2" />
+    <circle cx="-10" cy="-39" r="3.5" fill="#1e293b" />
+    <circle cx="-11" cy="-41" r="1.5" fill="#ffffff" />
+    <!-- Right Eye -->
+    <circle cx="11" cy="-38" r="6" fill="#ffffff" stroke="#451a03" stroke-width="2" />
+    <circle cx="12" cy="-39" r="3.5" fill="#1e293b" />
+    <circle cx="11" cy="-41" r="1.5" fill="#ffffff" />
+
+    <!-- Happy smile line -->
+    <path d="M -6 -23 Q 0 -19 6 -23" fill="none" stroke="#451a03" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Right Arm (Foreground swinging forward with high energy!) -->
+    <g transform="translate(25, -15) rotate(-35)">
+      <rect x="0" y="-8" width="35" height="16" rx="8" fill="url(#gradBrown)" stroke="#451a03" stroke-width="2.5" />
+      <circle cx="30" cy="0" r="9" fill="#451a03" />
+    </g>
+  </g>
+
+  <!-- TEXT BRANDING AT BOTTOM -->
+  <g transform="translate(250, 470)">
+    <!-- Modern Display Typography with Shadowing effects -->
+    <text text-anchor="middle" font-family="'Inter', 'Space Grotesk', 'Segoe UI', sans-serif" font-weight="900" font-style="italic" font-size="36" letter-spacing="1">
+      <tspan fill="#0f172a">ECOLOGICAL </tspan>
+      <tspan fill="#10b981">RACE</tspan>
+    </text>
+    
+    <!-- Small subtag -->
+    <text y="24" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', monospace" font-weight="bold" font-size="11" fill="#64748b" letter-spacing="4">
+      COMPITE POR EL PLANETA
+    </text>
+  </g>
+</svg>

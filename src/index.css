@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #fafdfb;
+  background-image: radial-gradient(#10b98115 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #0f172a;
+}
+
+/* Futuristic animations & micro-interactions */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 4px #10b981, 0 0 8px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px #10b981, 0 0 20px rgba(16, 185, 129, 0.6);
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 1);
+  }
+}
+
+.animate-neon-pulse {
+  animation: neonPulse 2s infinite ease-in-out;
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2.5s infinite ease-in-out;
+}
+
+/* Glassmorphism subtle effects */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}

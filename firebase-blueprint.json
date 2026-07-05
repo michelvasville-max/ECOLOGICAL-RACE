@@ -1,0 +1,120 @@
+{
+  "entities": {
+    "Institucion": {
+      "title": "Institucion",
+      "description": "Educational institution metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nombre": { "type": "string" },
+        "distrito": { "type": "string" },
+        "provincia": { "type": "string" },
+        "nivel": { "type": "string" },
+        "aulasCount": { "type": "number" }
+      },
+      "required": ["id", "nombre", "distrito", "provincia", "nivel"]
+    },
+    "Aula": {
+      "title": "Aula",
+      "description": "Classroom within an institution",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "institucionId": { "type": "string" },
+        "nombre": { "type": "string" },
+        "raceCollector": { "type": "string" }
+      },
+      "required": ["id", "institucionId", "nombre", "raceCollector"]
+    },
+    "RegistroSemanal": {
+      "title": "RegistroSemanal",
+      "description": "Weekly recycling registry and eco-activity proof",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "aulaId": { "type": "string" },
+        "semana": { "type": "number" },
+        "fecha": { "type": "string" },
+        "kgPlastico": { "type": "number" },
+        "kgAluminio": { "type": "number" },
+        "kgPapel": { "type": "number" },
+        "multiplicadorVerde": { "type": "boolean" },
+        "montoVentaSoles": { "type": "number" },
+        "ticketVentaUrl": { "type": "string" },
+        "fotoEvidenciaUrl": { "type": "string" },
+        "descripcionEvidencia": { "type": "string" }
+      },
+      "required": ["id", "aulaId", "semana", "fecha", "kgPlastico", "kgAluminio", "kgPapel", "multiplicadorVerde", "montoVentaSoles"]
+    },
+    "Comentario": {
+      "title": "Comentario",
+      "description": "Comment or feedback from visitors/admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "referenciaId": { "type": "string" },
+        "referenciaTipo": { "type": "string", "enum": ["acta", "resumen"] },
+        "autor": { "type": "string" },
+        "texto": { "type": "string" },
+        "fecha": { "type": "string" },
+        "estado": { "type": "string", "enum": ["pendiente", "aprobado"] }
+      },
+      "required": ["id", "referenciaId", "referenciaTipo", "autor", "texto", "fecha", "estado"]
+    },
+    "IntegranteEquipo": {
+      "title": "IntegranteEquipo",
+      "description": "Team member metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nombreCompleto": { "type": "string" },
+        "cargo": { "type": "string" },
+        "fotoUrl": { "type": "string" },
+        "esAsesora": { "type": "boolean" }
+      },
+      "required": ["id", "nombreCompleto", "cargo"]
+    },
+    "ProyectoMetadata": {
+      "title": "ProyectoMetadata",
+      "description": "Overall project vision, mission, and tracking metadata",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "mision": { "type": "string" },
+        "vision": { "type": "string" },
+        "nombreProyecto": { "type": "string" },
+        "categoria": { "type": "string" },
+        "institucionBase": { "type": "string" },
+        "asesoraOficial": { "type": "string" },
+        "duracion": { "type": "string" }
+      },
+      "required": ["mision", "vision", "nombreProyecto", "categoria", "institucionBase", "asesoraOficial", "duracion"]
+    }
+  },
+  "firestore": {
+    "/instituciones/{institucionId}": {
+      "schema": "Institucion",
+      "description": "Collection of schools participating in the eco race"
+    },
+    "/aulas/{aulaId}": {
+      "schema": "Aula",
+      "description": "Collection of classrooms linked to schools"
+    },
+    "/registros/{registroId}": {
+      "schema": "RegistroSemanal",
+      "description": "Collection of weekly recycling records"
+    },
+    "/comentarios/{comentarioId}": {
+      "schema": "Comentario",
+      "description": "Visitor and moderator comments"
+    },
+    "/equipo/{equipoId}": {
+      "schema": "IntegranteEquipo",
+      "description": "Our team members metadata"
+    },
+    "/proyecto_metadata/{metaId}": {
+      "schema": "ProyectoMetadata",
+      "description": "Singleton configuration document for project overview"
+    }
+  }
+}
