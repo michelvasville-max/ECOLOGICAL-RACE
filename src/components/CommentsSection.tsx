@@ -32,7 +32,6 @@ export default function CommentsSection({
   iniciarSesionConGoogle,
 }: Props) {
   const [texto, setTexto] = useState('');
-  const [nombreInstantaneo, setNombreInstantaneo] = useState('');
 
   const filtrarComentarios = comentarios.filter(
     (c) => c.referenciaId === referenciaId && c.referenciaTipo === referenciaTipo
@@ -55,12 +54,11 @@ export default function CommentsSection({
       autor: autorName,
       texto: texto.trim(),
       fecha: new Date().toISOString(),
-      estado: 'pendiente', // Always defaults to 'pendiente' (pending approval)
+      estado: 'aprobado', // Guardado como aprobado para que se vincule instantáneamente sin moderación obligatoria
     };
 
     onAgregarComentario(nuevo);
     setTexto('');
-    alert("¡Comentario enviado! Se mostrará públicamente una vez aprobado por el Administrador.");
   };
 
   return (
@@ -149,7 +147,7 @@ export default function CommentsSection({
           <Info className="w-8 h-8 text-amber-500 mb-2" />
           <h6 className="text-xs font-bold text-slate-800 uppercase font-mono tracking-wider">Identificación Obligatoria</h6>
           <p className="text-xs text-slate-500 max-w-sm mt-1 mb-3">
-            Debes identificarte para poder comentar sobre los pesajes o reaccionar a los comentarios de la comunidad.
+            Debes identificarte con Google para poder comentar sobre los pesajes o reaccionar a los comentarios de la comunidad.
           </p>
           
           <button
@@ -160,40 +158,6 @@ export default function CommentsSection({
             <span className="font-bold text-emerald-100 font-mono">G</span>
             <span>Iniciar Sesión con Google</span>
           </button>
-
-          <div className="w-full flex items-center my-4 text-slate-400 text-[9px] font-mono font-bold max-w-xs">
-            <div className="flex-1 border-t border-slate-200"></div>
-            <span className="px-2">O REGÍSTRATE AL INSTANTE</span>
-            <div className="flex-1 border-t border-slate-200"></div>
-          </div>
-
-          <div className="w-full max-w-xs space-y-2 text-left">
-            <label className="block text-[10px] font-mono text-slate-400 uppercase font-bold text-center">
-              ¿Problemas con Google? Ingresa tu nombre:
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Ej: Michel Vasville"
-                value={nombreInstantaneo}
-                onChange={(e) => setNombreInstantaneo(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white text-slate-800"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (nombreInstantaneo.trim()) {
-                    iniciarSesionConGoogle?.(nombreInstantaneo.trim());
-                  } else {
-                    alert("Por favor, escribe tu nombre para registrarte.");
-                  }
-                }}
-                className="bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition cursor-pointer shrink-0"
-              >
-                Entrar
-              </button>
-            </div>
-          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs">
@@ -232,11 +196,9 @@ export default function CommentsSection({
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
-            <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+            <span className="text-[10px] text-emerald-700 font-semibold font-mono flex items-center gap-1">
               <Lock className="w-3.5 h-3.5 animate-pulse" />
-              {rolActual === 'ADMIN' 
-                ? '✍️ Comentando como Administrador (Pasará por el panel de moderación)' 
-                : '⌛ Tu comentario se guardará como pendiente de aprobación por el Administrador.'}
+              Tu comentario se publicará al instante en tiempo real.
             </span>
             <button
               type="submit"

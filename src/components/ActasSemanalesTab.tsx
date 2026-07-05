@@ -24,7 +24,7 @@ interface Props {
   onGuardarReaccionFoto: (reac: ReaccionFoto) => Promise<void>;
   onEliminarReaccionFoto?: (id: string) => Promise<void>;
   onReaccionarComentario?: (comentarioId: string, tipo: 'like' | 'dislike') => Promise<void>;
-  iniciarSesionConGoogle?: (nickname?: string) => Promise<void>;
+  iniciarSesionConGoogle?: () => Promise<void>;
 }
 
 interface ItemGaleria {

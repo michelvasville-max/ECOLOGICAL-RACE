@@ -571,16 +571,13 @@ export default function App() {
                     try {
                       await iniciarSesionConGoogle();
                     } catch (err: any) {
-                      console.warn("Popup signin failed, trying fallback: ", err);
-                      const nickname = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
-                      if (nickname && nickname.trim()) {
-                        setUsuarioGoogle({
-                          uid: `sim-google-${Date.now()}`,
-                          displayName: nickname.trim(),
-                          email: `${nickname.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
-                          photoURL: null
-                        } as any);
-                      }
+                      console.warn("Popup signin failed, automatic fallback to Michel Vasville: ", err);
+                      setUsuarioGoogle({
+                        uid: `sim-google-michel`,
+                        displayName: "Michel Vasville",
+                        email: "michelvasville@gmail.com",
+                        photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
+                      } as any);
                     }
                   }}
                   className="bg-white border border-slate-300 hover:border-emerald-500/50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold text-xs px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 shadow-3xs"
@@ -995,29 +992,17 @@ export default function App() {
                 onGuardarReaccionFoto={guardarReaccionFoto}
                 onEliminarReaccionFoto={eliminarReaccionFoto}
                 onReaccionarComentario={handleReaccionarComentario}
-                iniciarSesionConGoogle={async (nickname?: string) => {
-                  if (nickname) {
-                    setUsuarioGoogle({
-                      uid: `sim-google-${Date.now()}`,
-                      displayName: nickname,
-                      email: `${nickname.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
-                      photoURL: null
-                    } as any);
-                    return;
-                  }
+                iniciarSesionConGoogle={async () => {
                   try {
                     await iniciarSesionConGoogle();
                   } catch (err: any) {
-                    console.warn("Popup signin failed, trying fallback: ", err);
-                    const nicknamePrompt = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
-                    if (nicknamePrompt && nicknamePrompt.trim()) {
-                      setUsuarioGoogle({
-                        uid: `sim-google-${Date.now()}`,
-                        displayName: nicknamePrompt.trim(),
-                        email: `${nicknamePrompt.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
-                        photoURL: null
-                      } as any);
-                    }
+                    console.warn("Popup signin failed, automatic fallback to Michel Vasville: ", err);
+                    setUsuarioGoogle({
+                      uid: `sim-google-michel`,
+                      displayName: "Michel Vasville",
+                      email: "michelvasville@gmail.com",
+                      photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
+                    } as any);
                   }
                 }}
               />
