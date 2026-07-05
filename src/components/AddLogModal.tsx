@@ -274,7 +274,7 @@ export default function AddLogModal({
               </div>
 
               <div>
-                <label className="block text-[9px] font-mono text-slate-500 mb-1">Papel / Cartón</label>
+                <label className="block text-[9px] font-mono text-slate-500 mb-1">Papel</label>
                 <input
                   type="number"
                   step="0.1"

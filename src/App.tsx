@@ -42,6 +42,7 @@ import {
   guardarRegistro,
   guardarComentario,
   guardarMiembroEquipo,
+  eliminarMiembroEquipo,
   guardarProyectoMetadata,
   guardarReaccionFoto,
   eliminarReaccionFoto,
@@ -1086,6 +1087,9 @@ export default function App() {
                   if (nuevoCargo !== null && nuevoCargo.trim() !== '') {
                     await guardarMiembroEquipo({ ...miembro, cargo: nuevoCargo.trim() });
                   }
+                }}
+                onEliminarEquipo={async (id) => {
+                  await eliminarMiembroEquipo(id);
                 }}
               />
             </motion.div>

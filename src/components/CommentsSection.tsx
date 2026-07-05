@@ -66,7 +66,7 @@ export default function CommentsSection({
     <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100" id="comments-engine">
       <h5 className="font-display font-bold text-slate-800 text-sm mb-4 flex items-center space-x-2">
         <MessageSquare className="w-4 h-4 text-emerald-600" />
-        <span>Comentarios y Rendición de Cuentas ({filtrarComentarios.filter(c => c.estado === 'aprobado').length})</span>
+        <span>Comentarios ({filtrarComentarios.filter(c => c.estado === 'aprobado').length})</span>
       </h5>
 
       {/* ADMIN PANEL FOR MODERATION (Only visible to ADMIN) */}

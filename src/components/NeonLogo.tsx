@@ -7,6 +7,7 @@ interface NeonLogoProps {
   sizeClass?: string; // e.g., 'w-20 h-20' or 'w-24 h-24'
   alt?: string;
   className?: string;
+  neonColor?: 'emerald' | 'indigo';
 }
 
 export default function NeonLogo({
@@ -15,6 +16,7 @@ export default function NeonLogo({
   sizeClass = 'w-20 h-20',
   alt = 'Logo',
   className = '',
+  neonColor = 'emerald',
 }: NeonLogoProps) {
   const [imgSrc, setImgSrc] = useState<string | undefined>(src);
   const [hasError, setHasError] = useState(false);
@@ -29,6 +31,8 @@ export default function NeonLogo({
     setHasError(true);
   };
 
+  const isIndigo = neonColor === 'indigo' || fallbackType === 'team';
+
   const getFallbackIcon = () => {
     switch (fallbackType) {
       case 'classroom':
@@ -36,7 +40,7 @@ export default function NeonLogo({
       case 'project':
         return <Award className="w-1/2 h-1/2 text-emerald-400" />;
       case 'team':
-        return <Users className="w-1/2 h-1/2 text-emerald-400 animate-pulse" />;
+        return <Users className="w-1/2 h-1/2 text-indigo-400 animate-pulse" />;
       case 'institution':
       default:
         return <Building2 className="w-1/2 h-1/2 text-emerald-400" />;
@@ -55,12 +59,19 @@ export default function NeonLogo({
     computedSizeClass = sizeClass.replace('w-24 h-24', 'w-32 h-32 md:w-36 md:h-36');
   }
 
+  const borderClass = isIndigo ? 'border-indigo-400' : 'border-emerald-400';
+  const bgClass = isIndigo ? 'bg-indigo-950/80' : 'bg-emerald-950';
+  const shadowClass = isIndigo 
+    ? 'shadow-[0_0_25px_rgba(99,102,241,0.8),inset_0_0_12px_rgba(99,102,241,0.5)]'
+    : 'shadow-[0_0_25px_rgba(16,185,129,0.8),inset_0_0_12px_rgba(16,185,129,0.5)]';
+  const ringClass = isIndigo ? 'ring-indigo-400/20' : 'ring-emerald-400/20';
+
   return (
     <div 
-      className={`relative rounded-full overflow-hidden border-2 md:border-3 border-emerald-400 bg-emerald-950 flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(16,185,129,0.8),inset_0_0_12px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/20 transition-all duration-300 group-hover:scale-105 ${computedSizeClass} ${className}`}
+      className={`relative rounded-full overflow-hidden border-2 md:border-3 ${borderClass} ${bgClass} flex items-center justify-center shrink-0 ${shadowClass} ${ringClass} transition-all duration-300 group-hover:scale-105 ${computedSizeClass} ${className}`}
     >
       {/* Holographic scanner effect line */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/10 to-transparent pointer-events-none animate-pulse z-10" />
+      <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${isIndigo ? 'via-indigo-500/10' : 'via-emerald-500/10'} to-transparent pointer-events-none animate-pulse z-10`} />
       
       {imgSrc && !hasError ? (
         <img
@@ -71,7 +82,7 @@ export default function NeonLogo({
           className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.05]"
         />
       ) : (
-        <div className="w-full h-full bg-emerald-950 flex items-center justify-center">
+        <div className={`w-full h-full ${isIndigo ? 'bg-indigo-950' : 'bg-emerald-950'} flex items-center justify-center`}>
           {getFallbackIcon()}
         </div>
       )}

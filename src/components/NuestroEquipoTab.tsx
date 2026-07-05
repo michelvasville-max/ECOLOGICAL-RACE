@@ -1,16 +1,17 @@
 import React from 'react';
 import { IntegranteEquipo } from '../types';
-import { ShieldCheck, Mail, Heart, Globe, Users, Cpu, Activity, Zap, FileCode, Award } from 'lucide-react';
+import { ShieldCheck, Mail, Heart, Globe, Users, Cpu, Activity, Zap, FileCode, Award, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import NeonLogo from './NeonLogo';
 
 interface Props {
   equipo: IntegranteEquipo[];
   onEditarEquipo?: (miembro: IntegranteEquipo) => void;
+  onEliminarEquipo?: (id: string) => void;
   rolActual?: string;
 }
 
-export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: Props) {
+export default function NuestroEquipoTab({ equipo, onEditarEquipo, onEliminarEquipo, rolActual }: Props) {
   const asesoras = equipo.filter((e) => e.esAsesora);
   const estudiantes = equipo.filter((e) => !e.esAsesora);
 
@@ -67,11 +68,11 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                 key={asesora.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 border border-emerald-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.12)]"
+                className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 border border-indigo-500/50 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.3)]"
               >
                 {/* Neon grid pattern */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.01)_1px,transparent_1px)] bg-[size:12px_12px] pointer-events-none" />
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(99,102,241,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.015)_1px,transparent_1px)] bg-[size:12px_12px] pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
                 <div className="relative shrink-0">
                   <NeonLogo
@@ -79,14 +80,15 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                     fallbackType="team"
                     sizeClass="w-24 h-24"
                     alt={asesora.nombreCompleto}
+                    neonColor="indigo"
                   />
-                  <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-neutral-950 w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-black shadow-[0_0_8px_rgba(16,185,129,0.5)] z-20">
+                  <span className="absolute -bottom-1 -right-1 bg-indigo-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-black shadow-[0_0_8px_rgba(99,102,241,0.5)] z-20">
                     ★
                   </span>
                 </div>
                 <div className="text-center md:text-left flex-1 space-y-2 relative z-10">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                    <span className="text-[9px] font-mono text-emerald-400 font-bold bg-emerald-950 border border-emerald-500/30 px-2.5 py-0.5 rounded uppercase tracking-widest">
+                    <span className="text-[9px] font-mono text-indigo-400 font-bold bg-indigo-950 border border-indigo-500/30 px-2.5 py-0.5 rounded uppercase tracking-widest">
                       DIRECTORA DE ESTACIÓN / ASESORA OFICIAL
                     </span>
                     <span className="text-[9px] font-mono text-blue-400 font-bold bg-blue-950 border border-blue-500/30 px-2 py-0.5 rounded tracking-widest uppercase">
@@ -105,13 +107,26 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                 </div>
 
                 {rolActual === 'ADMIN' && onEditarEquipo && (
-                  <div className="shrink-0 relative z-10">
+                  <div className="shrink-0 relative z-10 flex flex-col gap-2">
                     <button
                       onClick={() => onEditarEquipo(asesora)}
                       className="text-emerald-400 hover:text-emerald-300 font-bold text-xs hover:underline bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 hover:border-emerald-400 px-3 py-1.5 rounded transition cursor-pointer"
                     >
                       MODIFICAR CARGO
                     </button>
+                    {onEliminarEquipo && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Estás seguro de que deseas eliminar permanentemente a ${asesora.nombreCompleto} de la base de datos?`)) {
+                            onEliminarEquipo(asesora.id);
+                          }
+                        }}
+                        className="text-rose-400 hover:text-rose-300 font-bold text-xs bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30 hover:border-rose-400 px-3 py-1.5 rounded transition cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>ELIMINAR</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </motion.div>
@@ -163,10 +178,10 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 whileHover={{ y: -4, scale: 1.02 }}
-                className="bg-emerald-950 border border-emerald-500/30 hover:border-emerald-400/80 rounded-xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                className="bg-emerald-950 border border-indigo-500/40 hover:border-indigo-400/80 rounded-xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_15px_rgba(99,102,241,0.35)]"
               >
                 {/* Visual sci-fi scanner bar on hover */}
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-400/50 opacity-0 group-hover:opacity-100 transition-all duration-300 animate-pulse" />
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-indigo-400/50 opacity-0 group-hover:opacity-100 transition-all duration-300 animate-pulse" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-950/20 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none" />
 
                 <div className="flex flex-col items-center text-center relative z-10">
@@ -177,22 +192,23 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                       fallbackType="team"
                       sizeClass="w-20 h-20"
                       alt={integrante.nombreCompleto}
+                      neonColor="indigo"
                     />
                     {/* Active light indicator */}
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-emerald-950 rounded-full flex items-center justify-center z-20" title="Agente en línea">
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-indigo-500 border-2 border-emerald-950 rounded-full flex items-center justify-center z-20" title="Agente en línea">
                       <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                     </span>
                   </div>
 
                   {/* ID Profile */}
                   <div className="space-y-1 w-full">
-                    <span className="text-[8px] font-mono text-emerald-400 font-bold bg-emerald-950 border border-emerald-500/20 px-1.5 py-0.5 rounded tracking-widest uppercase">
+                    <span className="text-[8px] font-mono text-indigo-400 font-bold bg-indigo-950 border border-indigo-500/20 px-1.5 py-0.5 rounded tracking-widest uppercase">
                       ID-{integrante.id.substring(0, 8).toUpperCase()}
                     </span>
                     <h5 className="font-display font-black text-white text-xs tracking-tight uppercase truncate max-w-full">
                       {integrante.nombreCompleto}
                     </h5>
-                    <p className="text-[9px] text-slate-200 font-mono font-medium mt-1 uppercase tracking-wider bg-emerald-900/60 border border-emerald-500/15 px-2 py-0.5 rounded-full inline-block">
+                    <p className="text-[9px] text-slate-200 font-mono font-medium mt-1 uppercase tracking-wider bg-indigo-900/40 border border-indigo-500/15 px-2 py-0.5 rounded-full inline-block">
                       {integrante.cargo}
                     </p>
                   </div>
@@ -200,17 +216,32 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
 
                 <div className="mt-4 pt-3 border-t border-neutral-800 flex justify-between items-center text-[9px] font-mono text-slate-500">
                   <span className="flex items-center gap-1">
-                    <Award className="w-3 h-3 text-emerald-400" />
+                    <Award className="w-3 h-3 text-indigo-400" />
                     RANGO: AGENTE
                   </span>
                   
                   {rolActual === 'ADMIN' && onEditarEquipo ? (
-                    <button
-                      onClick={() => onEditarEquipo(integrante)}
-                      className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 hover:border-emerald-400 px-2 py-0.5 rounded transition cursor-pointer"
-                    >
-                      MODIFICAR CARGO
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => onEditarEquipo(integrante)}
+                        className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 hover:border-emerald-400 px-2 py-0.5 rounded transition cursor-pointer"
+                      >
+                        MODIFICAR
+                      </button>
+                      {onEliminarEquipo && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Estás seguro de que deseas eliminar a ${integrante.nombreCompleto} del equipo permanentemente?`)) {
+                              onEliminarEquipo(integrante.id);
+                            }
+                          }}
+                          className="text-rose-400 hover:text-rose-300 bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30 hover:border-rose-400 p-1 rounded transition cursor-pointer"
+                          title="Eliminar Integrante"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-emerald-500/70 font-semibold uppercase">AUTORIZADO</span>
                   )}

@@ -129,14 +129,14 @@ export default function FuturisticImageSlider() {
         className="grid grid-cols-3 gap-4 text-center pt-2"
         id="materials-ecological-grid"
       >
-        {/* PAPEL / CARTÓN */}
+        {/* PAPEL */}
         <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:border-emerald-500/50 hover:shadow-xs transition duration-300 group">
           <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center transition duration-300 group-hover:scale-110">
             <Layers className="w-4 h-4" />
           </div>
           <div>
             <span className="text-[10px] font-mono font-black text-slate-400 uppercase tracking-widest block leading-none">Material 01</span>
-            <span className="text-[11px] font-display font-black text-slate-800 uppercase tracking-tight mt-0.5 block">Papel / Cartón</span>
+            <span className="text-[11px] font-display font-black text-slate-800 uppercase tracking-tight mt-0.5 block">Papel</span>
           </div>
         </div>
 

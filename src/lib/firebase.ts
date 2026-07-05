@@ -257,6 +257,10 @@ export async function guardarMiembroEquipo(miembro: IntegranteEquipo) {
   await setDoc(doc(db, 'equipo', miembro.id), miembro);
 }
 
+export async function eliminarMiembroEquipo(id: string) {
+  await deleteDoc(doc(db, 'equipo', id));
+}
+
 export function escucharReaccionesFotos(onUpdate: (data: ReaccionFoto[]) => void) {
   return onSnapshot(collection(db, 'reacciones_fotos'), 
     (snapshot) => {

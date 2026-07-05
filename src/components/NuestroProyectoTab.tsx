@@ -142,60 +142,73 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
   return (
     <div className="space-y-12" id="project-info-tab">
       {/* 1. UPPER HERO BANNER */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden flex flex-col md:flex-row gap-8 items-center">
-        {/* Deco Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-br from-sky-300/90 via-sky-100/80 to-cyan-300/90 border-2 border-sky-400 rounded-3xl p-6 md:p-8 relative overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 items-center shadow-[0_10px_35px_rgba(14,165,233,0.18)]" id="hero-banner-neon">
+        {/* Deco Accents */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-400/5 rounded-full blur-3xl pointer-events-none" />
 
-        {/* LOGO CONTAINER */}
-        <div className="relative group shrink-0">
-          <div className="w-36 h-36 bg-slate-50 rounded-2xl border-2 border-slate-200 flex flex-col items-center justify-center overflow-hidden shadow-inner bg-white">
-            {(editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg') ? (
-              <img
-                src={editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg'}
-                alt="Logo del Proyecto"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain p-2"
-              />
-            ) : (
-              <div className="text-center p-3">
-                <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-1.5" />
-                <span className="text-[10px] font-mono text-slate-400 block font-bold">SIN LOGO</span>
-              </div>
+        {/* LEFT COLUMN: LOGO CONTAINER (Takes 50% width and centers the logo) */}
+        <div className="flex items-center justify-center w-full h-full py-4 z-10">
+          <div className="relative group shrink-0">
+            <div className="w-64 h-64 md:w-76 md:h-76 bg-white rounded-3xl border-2 border-sky-400 p-5 flex flex-col items-center justify-center overflow-hidden shadow-[0_12px_35px_rgba(14,165,233,0.25),inset_0_0_15px_rgba(14,165,233,0.05)] transition-all duration-300 hover:scale-103">
+              {(editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg') ? (
+                <img
+                  src={editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg'}
+                  alt="Logo del Proyecto"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain p-1"
+                />
+              ) : (
+                <div className="text-center p-3">
+                  <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-1.5" />
+                  <span className="text-[10px] font-mono text-slate-500 block font-bold">SIN LOGO</span>
+                </div>
+              )}
+            </div>
+
+            {rolActual === 'ADMIN' && (
+              <label className="absolute inset-0 bg-slate-950/85 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition rounded-3xl cursor-pointer text-center p-2 z-10">
+                <Upload className="w-6 h-6 text-sky-400" />
+                <span className="text-[9px] font-mono font-bold tracking-wider text-sky-300">
+                  {subiendoLogo ? 'SUBIENDO...' : 'SUBIR LOGO'}
+                </span>
+                <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+              </label>
             )}
           </div>
-
-          {rolActual === 'ADMIN' && (
-            <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition rounded-2xl cursor-pointer text-center p-2 z-10">
-              <Upload className="w-5 h-5 text-emerald-400" />
-              <span className="text-[9px] font-mono font-bold tracking-wider">
-                {subiendoLogo ? 'SUBIENDO...' : 'SUBIR LOGO'}
-              </span>
-              <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
-            </label>
-          )}
         </div>
 
-        {/* PROYECTO PRESENTATION HEADER */}
-        <div className="flex-1 text-center md:text-left space-y-3 z-10">
-          <div className="flex items-center justify-center md:justify-start space-x-1.5 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-wider font-extrabold w-fit border border-emerald-150">
-            <Sparkles className="w-3.5 h-3.5" />
+        {/* RIGHT COLUMN: PROYECTO PRESENTATION HEADER (Description of the project) */}
+        <div className="text-left space-y-4 z-10">
+          <div className="flex items-center space-x-1.5 text-[10px] font-mono text-sky-950 bg-sky-200/90 px-2.5 py-1 rounded-full uppercase tracking-wider font-extrabold w-fit border border-sky-300/85">
+            <Sparkles className="w-3.5 h-3.5 text-sky-600" />
             <span>Nuestra Identidad</span>
           </div>
-          <h2 className="font-display font-black text-slate-900 text-2xl md:text-3.5xl tracking-tight leading-none">
+
+          <h2 className="font-display font-black text-slate-950 text-2.5xl md:text-3.5xl tracking-tight leading-none">
             {isEditing ? (
               <input
                 type="text"
                 value={editedData.nombreProyecto}
                 onChange={(e) => setEditedData((prev) => ({ ...prev, nombreProyecto: e.target.value }))}
-                className="bg-slate-50 text-slate-800 border border-slate-200 rounded-xl px-3 py-1 text-xl font-bold font-sans w-full max-w-md focus:outline-emerald-600 focus:bg-white shadow-3xs"
+                className="bg-white text-slate-950 border border-sky-300 rounded-xl px-3 py-1 text-xl font-bold font-sans w-full max-w-md focus:outline-sky-400 focus:bg-white shadow-[0_0_10px_rgba(14,165,233,0.1)]"
               />
             ) : (
               metadata.nombreProyecto || 'Ecological Race'
             )}
           </h2>
-          <p className="text-xs text-slate-500 leading-relaxed font-mono max-w-2xl">
-            Ficha oficial de identidad cooperativa-ecológica de {metadata.nombreProyecto || 'Ecological Race'}. Controlamos pesajes transparentes para el beneficio de cada institución escolar aliada.
-          </p>
+
+          <div className="text-xs md:text-sm text-slate-950 leading-relaxed font-sans font-semibold space-y-2.5 text-justify">
+            <p>
+              <strong className="text-slate-950 font-black font-display">Ecological Race</strong> es un proyecto de innovación ambiental y social que implementa una <strong className="text-slate-950 font-black font-display">Cooperativa Ecológica Autofinanciada</strong> en una institución educativa. Su objetivo es promover una cultura de reciclaje sostenible mediante la segregación de plástico, papel y aluminio desde los hogares, aplicando principios de economía circular.
+            </p>
+            <p>
+              Además, fortalece el liderazgo estudiantil a través de los <strong className="text-slate-950 font-black font-display">Race Collectors (Brigadistas Ambientales)</strong>, quienes lideran y coordinan las acciones ambientales dentro de cada aula. Periódicamente, el equipo ejecutor brinda seguimiento, capacitación y apoyo en el pesaje de los residuos.
+            </p>
+            <p>
+              Los ingresos obtenidos por la venta del material reciclado se destinan, de manera transparente, a atender las necesidades de la institución, mientras se mide el impacto ambiental mediante el cálculo del CO₂ evitado. El propósito final es que la cooperativa funcione de forma autónoma y se consolide como una iniciativa sostenible dentro de la comunidad educativa.
+            </p>
+          </div>
 
           {rolActual === 'ADMIN' && !isEditing && (
             <button
@@ -212,7 +225,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                 });
                 setIsEditing(true);
               }}
-              className="mt-3 inline-flex items-center space-x-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-mono text-xs px-4 py-2 rounded-xl shadow-md cursor-pointer transition font-bold"
+              className="mt-3 inline-flex items-center space-x-1.5 bg-cyan-600 hover:bg-cyan-700 text-white font-mono text-xs px-4 py-2.5 rounded-xl shadow-[0_4px_12px_rgba(6,182,212,0.2)] cursor-pointer transition duration-300 font-bold"
             >
               <Edit className="w-3.5 h-3.5" />
               <span>Editar Todo el Proyecto</span>
@@ -226,10 +239,10 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
         {/* Row 1: MISIÓN (Text Left, Image Right) */}
         <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12">
           {/* Text Block */}
-          <div className="flex-1 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs flex flex-col justify-between">
+          <div className="flex-1 bg-cyan-50/40 border border-cyan-200/80 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(6,182,212,0.05)] flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-emerald-700 font-display font-black text-sm uppercase tracking-wide">
-                <Heart className="w-5 h-5 text-emerald-500 fill-emerald-100" />
+              <div className="flex items-center space-x-2 text-cyan-800 font-display font-black text-sm uppercase tracking-wide">
+                <Heart className="w-5 h-5 text-cyan-500 fill-cyan-100/50" />
                 <span>Nuestra Misión</span>
               </div>
 
@@ -237,23 +250,23 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                 <textarea
                   value={editedData.mision}
                   onChange={(e) => setEditedData((prev) => ({ ...prev, mision: e.target.value }))}
-                  className="w-full h-36 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-sans text-slate-700 leading-relaxed focus:outline-emerald-600 focus:bg-white shadow-inner"
+                  className="w-full h-36 bg-white border border-cyan-200 rounded-xl p-3 text-xs font-sans text-slate-800 leading-relaxed focus:outline-cyan-400 focus:bg-white shadow-inner"
                 />
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed font-sans font-medium">
+                <p className="text-sm text-cyan-900 leading-relaxed font-sans font-semibold">
                   {metadata.mision}
                 </p>
               )}
             </div>
             
-            <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 text-xs font-mono text-slate-500 mt-6 flex items-center space-x-2">
-              <span className="text-emerald-500 font-black">🎯</span>
+            <div className="bg-cyan-100/40 border border-cyan-200/50 rounded-xl p-4 text-xs font-mono text-cyan-850 mt-6 flex items-center space-x-2">
+              <span className="text-cyan-600 font-black">🎯</span>
               <span>Propósito que impulsa cada kilo recolectado por el concurso.</span>
             </div>
           </div>
 
           {/* Image Block */}
-          <div className="lg:w-2/5 shrink-0 relative group rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 min-h-[220px] shadow-sm flex items-center justify-center">
+          <div className="lg:w-2/5 shrink-0 relative group rounded-3xl overflow-hidden border border-cyan-200 bg-cyan-50/50 min-h-[220px] shadow-sm flex items-center justify-center">
             <img
               src={editedData.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800'}
               alt="Misión del Proyecto"
@@ -261,15 +274,15 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             />
             
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-linear-to-t from-emerald-950/60 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-emerald-900/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+            <div className="absolute inset-0 bg-linear-to-t from-cyan-950/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-cyan-950/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
               Ilustración Misión
             </div>
 
             {rolActual === 'ADMIN' && (
-              <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
-                <Upload className="w-6 h-6 text-emerald-400" />
-                <span className="text-xs font-mono font-bold tracking-wider">
+              <label className="absolute inset-0 bg-slate-950/85 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
+                <Upload className="w-6 h-6 text-cyan-400" />
+                <span className="text-xs font-mono font-bold tracking-wider text-cyan-300">
                   {subiendoMision ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
                 </span>
                 <input type="file" accept="image/*" onChange={handleMisionImageChange} className="hidden" />
@@ -281,7 +294,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
         {/* Row 2: VISIÓN (Image Left, Text Right) */}
         <div className="flex flex-col-reverse lg:flex-row items-stretch gap-8 lg:gap-12">
           {/* Image Block */}
-          <div className="lg:w-2/5 shrink-0 relative group rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 min-h-[220px] shadow-sm flex items-center justify-center">
+          <div className="lg:w-2/5 shrink-0 relative group rounded-3xl overflow-hidden border border-cyan-200 bg-cyan-50/50 min-h-[220px] shadow-sm flex items-center justify-center">
             <img
               src={editedData.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800'}
               alt="Visión del Proyecto"
@@ -289,15 +302,15 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             />
             
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-linear-to-t from-emerald-950/60 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-emerald-900/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+            <div className="absolute inset-0 bg-linear-to-t from-cyan-950/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-cyan-950/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
               Ilustración Visión
             </div>
 
             {rolActual === 'ADMIN' && (
-              <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
-                <Upload className="w-6 h-6 text-emerald-400" />
-                <span className="text-xs font-mono font-bold tracking-wider">
+              <label className="absolute inset-0 bg-slate-950/85 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
+                <Upload className="w-6 h-6 text-cyan-400" />
+                <span className="text-xs font-mono font-bold tracking-wider text-cyan-300">
                   {subiendoVision ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
                 </span>
                 <input type="file" accept="image/*" onChange={handleVisionImageChange} className="hidden" />
@@ -306,10 +319,10 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           </div>
 
           {/* Text Block */}
-          <div className="flex-1 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs flex flex-col justify-between">
+          <div className="flex-1 bg-cyan-50/40 border border-cyan-200/80 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(6,182,212,0.05)] flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-emerald-700 font-display font-black text-sm uppercase tracking-wide">
-                <Globe className="w-5 h-5 text-emerald-500 fill-emerald-100" />
+              <div className="flex items-center space-x-2 text-cyan-800 font-display font-black text-sm uppercase tracking-wide">
+                <Globe className="w-5 h-5 text-cyan-500 fill-cyan-100/50" />
                 <span>Nuestra Visión</span>
               </div>
 
@@ -317,17 +330,17 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                 <textarea
                   value={editedData.vision}
                   onChange={(e) => setEditedData((prev) => ({ ...prev, vision: e.target.value }))}
-                  className="w-full h-36 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-sans text-slate-700 leading-relaxed focus:outline-emerald-600 focus:bg-white shadow-inner"
+                  className="w-full h-36 bg-white border border-cyan-200 rounded-xl p-3 text-xs font-sans text-slate-800 leading-relaxed focus:outline-cyan-400 focus:bg-white shadow-inner"
                 />
               ) : (
-                <p className="text-sm text-slate-600 leading-relaxed font-sans font-medium">
+                <p className="text-sm text-cyan-900 leading-relaxed font-sans font-semibold">
                   {metadata.vision}
                 </p>
               )}
             </div>
 
-            <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 text-xs font-mono text-slate-500 mt-6 flex items-center space-x-2">
-              <span className="text-emerald-500 font-black">🌱</span>
+            <div className="bg-cyan-100/40 border border-cyan-200/50 rounded-xl p-4 text-xs font-mono text-cyan-850 mt-6 flex items-center space-x-2">
+              <span className="text-cyan-600 font-black">🌱</span>
               <span>El legado de transparencia y corresponsabilidad que queremos heredar.</span>
             </div>
           </div>
@@ -337,15 +350,15 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
       {/* 3. TECHNICAL SHEET & EDITABLE GLOBAL CONFIGURATION */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Card A: General Metadata */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-cyan-50/40 border border-cyan-200/80 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(6,182,212,0.05)] space-y-6">
+          <div className="flex items-center justify-between border-b border-cyan-150 pb-4">
             <div className="flex items-center space-x-2">
-              <Landmark className="w-5 h-5 text-emerald-600" />
-              <h3 className="font-display font-black text-slate-850 text-sm uppercase tracking-tight">
+              <Landmark className="w-5 h-5 text-cyan-600" />
+              <h3 className="font-display font-black text-cyan-950 text-sm uppercase tracking-tight">
                 Ficha Técnica del Proyecto
               </h3>
             </div>
-            <span className="text-[10px] font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-extrabold uppercase border border-emerald-150">
+            <span className="text-[10px] font-mono bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded font-extrabold uppercase border border-cyan-200">
               Metadatos
             </span>
           </div>
@@ -354,51 +367,51 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             {isEditing ? (
               <div className="space-y-3.5 text-xs font-mono">
                 <div className="space-y-1">
-                  <label className="text-slate-450 font-bold uppercase block text-[8px]">Categoría del Proyecto</label>
+                  <label className="text-cyan-800/80 font-bold uppercase block text-[8px]">Categoría del Proyecto</label>
                   <input
                     type="text"
                     value={editedData.categoria}
                     onChange={(e) => setEditedData((prev) => ({ ...prev, categoria: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs font-semibold"
+                    className="w-full bg-white border border-cyan-200 rounded-xl p-2.5 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs font-semibold"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-450 font-bold uppercase block text-[8px]">Institución Co-Gestora Base</label>
+                  <label className="text-cyan-800/80 font-bold uppercase block text-[8px]">Institución Co-Gestora Base</label>
                   <input
                     type="text"
                     value={editedData.institucionBase}
                     onChange={(e) => setEditedData((prev) => ({ ...prev, institucionBase: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs font-semibold"
+                    className="w-full bg-white border border-cyan-200 rounded-xl p-2.5 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs font-semibold"
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-3.5 text-xs font-mono">
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+                  <BookOpen className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-slate-450 block uppercase text-[8px] font-bold">Categoría Oficial</span>
-                    <span className="text-slate-800 font-bold text-xs tracking-tight">{metadata.categoria}</span>
+                    <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Categoría Oficial</span>
+                    <span className="text-cyan-950 font-bold text-xs tracking-tight">{metadata.categoria}</span>
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 flex items-start gap-3">
-                  <Landmark className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+                  <Landmark className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-slate-450 block uppercase text-[8px] font-bold">Institución Co-Gestora Base</span>
-                    <span className="text-slate-800 font-bold text-xs tracking-tight">{metadata.institucionBase}</span>
+                    <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Institución Co-Gestora Base</span>
+                    <span className="text-cyan-950 font-bold text-xs tracking-tight">{metadata.institucionBase}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* UNIFIED ADVISOR COMPONENT (READ ONLY / AUTO CALC FROM TEAM) */}
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+              <ShieldCheck className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <span className="text-slate-450 block uppercase text-[8px] font-bold">Asesora Oficial COAR</span>
-                <span className="text-slate-800 font-bold text-xs tracking-tight block truncate">
+                <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Asesora Oficial COAR</span>
+                <span className="text-cyan-950 font-bold text-xs tracking-tight block truncate">
                   {nombreAsesora}
                 </span>
               </div>
@@ -407,15 +420,15 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
         </div>
 
         {/* Card B: Global Carbon Goal & Social Networks (All Editable) */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-cyan-50/40 border border-cyan-200/80 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(6,182,212,0.05)] space-y-6">
+          <div className="flex items-center justify-between border-b border-cyan-150 pb-4">
             <div className="flex items-center space-x-2">
-              <Target className="w-5 h-5 text-emerald-600" />
-              <h3 className="font-display font-black text-slate-850 text-sm uppercase tracking-tight">
+              <Target className="w-5 h-5 text-cyan-600" />
+              <h3 className="font-display font-black text-cyan-950 text-sm uppercase tracking-tight">
                 Metas y Canales Oficiales
               </h3>
             </div>
-            <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-extrabold uppercase border border-blue-150">
+            <span className="text-[10px] font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-extrabold uppercase border border-teal-200">
               Admin
             </span>
           </div>
@@ -423,7 +436,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           <div className="space-y-4">
             {/* Meta de Carbono Global Input */}
             <div>
-              <label className="block text-[8px] font-mono text-slate-450 uppercase mb-1 font-bold">
+              <label className="block text-[8px] font-mono text-cyan-800/80 uppercase mb-1 font-bold">
                 Meta Global de Carbono del Proyecto (kg CO₂)
               </label>
               {isEditing ? (
@@ -431,13 +444,13 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   type="number"
                   value={editedData.metaGlobalCO2 || 1500}
                   onChange={(e) => setEditedData((prev) => ({ ...prev, metaGlobalCO2: Number(e.target.value) }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 font-mono focus:outline-emerald-600 focus:bg-white text-xs font-bold"
+                  className="w-full bg-white border border-cyan-200 rounded-xl p-2.5 text-slate-800 font-mono focus:outline-cyan-400 focus:bg-white text-xs font-bold"
                   placeholder="Ej. 1500"
                 />
               ) : (
-                <div className="bg-slate-50 rounded-xl p-3 border border-slate-150 flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-slate-700">Meta Global de Respaldo:</span>
-                  <span className="text-sm font-mono font-black text-emerald-600">
+                <div className="bg-white rounded-xl p-3 border border-cyan-150/70 flex items-center justify-between shadow-2xs">
+                  <span className="text-xs font-mono font-bold text-cyan-800/80">Meta Global de Respaldo:</span>
+                  <span className="text-sm font-mono font-black text-cyan-600">
                     {(metadata.metaGlobalCO2 || 1500).toFixed(0)} kg CO₂
                   </span>
                 </div>
@@ -445,33 +458,33 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             </div>
 
             {/* TikTok Config */}
-            <div className="border border-slate-150 rounded-xl p-3.5 space-y-3 bg-slate-50/50">
+            <div className="border border-cyan-150 rounded-xl p-3.5 space-y-3 bg-white shadow-2xs">
               <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 text-slate-700 fill-current" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-cyan-700 fill-current" viewBox="0 0 24 24">
                   <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.43-.17-.11-.32-.23-.48-.36v7.24c0 1.27-.31 2.56-.93 3.65-1.16 2.05-3.5 3.34-5.85 3.17-2.73-.08-5.22-2.12-5.75-4.8-.62-2.78.71-5.86 3.19-7.1 1.02-.53 2.19-.74 3.34-.64V13.8c-.89-.13-1.85.08-2.58.63-.8.56-1.21 1.58-1.07 2.54.14.99.98 1.8 1.96 1.89 1.15.11 2.27-.64 2.54-1.74.07-.3.09-.6.09-.9V0h1.88z" />
                 </svg>
-                <span className="text-[10px] font-mono font-bold uppercase text-slate-700">TikTok del Proyecto</span>
+                <span className="text-[10px] font-mono font-bold uppercase text-cyan-800">TikTok del Proyecto</span>
               </div>
 
               {isEditing ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[8px] font-mono text-slate-400 block uppercase mb-0.5">Usuario</label>
+                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Usuario</label>
                     <input
                       type="text"
                       value={editedData.tiktokUser || ''}
                       onChange={(e) => setEditedData((prev) => ({ ...prev, tiktokUser: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs"
+                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
                       placeholder="@ecologicalrace"
                     />
                   </div>
                   <div>
-                    <label className="text-[8px] font-mono text-slate-400 block uppercase mb-0.5">URL Directa</label>
+                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">URL Directa</label>
                     <input
                       type="text"
                       value={editedData.tiktokUrl || ''}
                       onChange={(e) => setEditedData((prev) => ({ ...prev, tiktokUrl: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs"
+                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
                       placeholder="https://tiktok.com/@..."
                     />
                   </div>
@@ -479,12 +492,12 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               ) : (
                 <div className="text-xs font-mono space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-slate-450">Usuario:</span>
-                    <span className="text-slate-700 font-bold">{metadata.tiktokUser || '@ecologicalrace'}</span>
+                    <span className="text-cyan-800/60">Usuario:</span>
+                    <span className="text-cyan-950 font-bold">{metadata.tiktokUser || '@ecologicalrace'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-450">Enlace:</span>
-                    <a href={metadata.tiktokUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline truncate max-w-[200px]">
+                    <span className="text-cyan-800/60">Enlace:</span>
+                    <a href={metadata.tiktokUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline truncate max-w-[200px]">
                       {metadata.tiktokUrl || 'No definido'}
                     </a>
                   </div>
@@ -493,35 +506,35 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             </div>
 
             {/* Instagram Config */}
-            <div className="border border-slate-150 rounded-xl p-3.5 space-y-3 bg-slate-50/50">
+            <div className="border border-cyan-150 rounded-xl p-3.5 space-y-3 bg-white shadow-2xs">
               <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 text-slate-700 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4 text-cyan-700 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                 </svg>
-                <span className="text-[10px] font-mono font-bold uppercase text-slate-700">Instagram del Proyecto</span>
+                <span className="text-[10px] font-mono font-bold uppercase text-cyan-800">Instagram del Proyecto</span>
               </div>
 
               {isEditing ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[8px] font-mono text-slate-400 block uppercase mb-0.5">Usuario</label>
+                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Usuario</label>
                     <input
                       type="text"
                       value={editedData.instagramUser || ''}
                       onChange={(e) => setEditedData((prev) => ({ ...prev, instagramUser: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs"
+                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
                       placeholder="@ecologicalrace"
                     />
                   </div>
                   <div>
-                    <label className="text-[8px] font-mono text-slate-400 block uppercase mb-0.5">URL Directa</label>
+                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">URL Directa</label>
                     <input
                       type="text"
                       value={editedData.instagramUrl || ''}
                       onChange={(e) => setEditedData((prev) => ({ ...prev, instagramUrl: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-emerald-600 focus:bg-white text-xs"
+                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
                       placeholder="https://instagram.com/..."
                     />
                   </div>
@@ -529,12 +542,12 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               ) : (
                 <div className="text-xs font-mono space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-slate-450">Usuario:</span>
-                    <span className="text-slate-700 font-bold">{metadata.instagramUser || '@ecologicalrace'}</span>
+                    <span className="text-cyan-800/60">Usuario:</span>
+                    <span className="text-cyan-950 font-bold">{metadata.instagramUser || '@ecologicalrace'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-450">Enlace:</span>
-                    <a href={metadata.instagramUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline truncate max-w-[200px]">
+                    <span className="text-cyan-800/60">Enlace:</span>
+                    <a href={metadata.instagramUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline truncate max-w-[200px]">
                       {metadata.instagramUrl || 'No definido'}
                     </a>
                   </div>
@@ -545,7 +558,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
         </div> {/* Closes Grid (Card A & B) opened at line 338 */}
       </div>
 
-      {/* 2 APARTADOS INFORMATIVOS FIJOS - ESTILO ULTRA-FUTURISTA HUD / CYBER-GLASS */}
+      {/* 2 APARTADOS INFORMATIVOS FIJOS - ESTILO ESMERALDA CIBERNÉTICA / QUANTUM */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
         
         {/* APARTADO 1 - BONUS DE CARBONO */}
@@ -591,7 +604,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed font-sans font-medium">
-              El <span className="text-emerald-400 font-semibold font-mono">Bonus de Carbono</span> mide en kilogramos la cantidad de <span className="text-emerald-400 font-semibold font-mono">CO₂</span> (gases de efecto invernadero) que se evita emitir gracias al reciclaje de cada aula, calculado en tiempo real según el tipo de material procesado.
+              El <span className="text-emerald-400 font-semibold font-mono">Bonus de Carbono</span> mide en kilogramos la cantidad de <span className="text-emerald-400 font-semibold font-mono">CO₂</span> (gases de efecto invernadero) que se evita emitir gracias al reciclaje de cada aula, calculated en tiempo real según el tipo de material procesado.
             </p>
 
             {/* Futuristic Tech Cards Grid */}
@@ -629,13 +642,13 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                 <div className="space-y-1">
                   <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Aluminio</span>
                   <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
-                  <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-cyan-500/5 border border-cyan-500/20 mt-1">
+                  <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-emerald-500/5 border border-emerald-500/20 mt-1">
                     <span className="text-xs font-mono font-black text-cyan-400 tracking-tight">9.0 kg CO₂</span>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Papel/Cartón Card */}
+              {/* Papel Card */}
               <motion.div 
                 whileHover={{ y: -5, scale: 1.02 }}
                 className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-teal-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
@@ -646,7 +659,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   📦
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Papel/Cartón</span>
+                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Papel</span>
                   <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
                   <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-teal-500/5 border border-teal-500/20 mt-1">
                     <span className="text-xs font-mono font-black text-teal-400 tracking-tight">1.0 kg CO₂</span>
@@ -679,7 +692,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               <div className="flex items-center space-x-3">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute -inset-1.5 rounded-full bg-cyan-500/20 blur-xs animate-pulse" />
-                  <div className="w-10 h-10 rounded-full bg-emerald-900 border border-cyan-500/40 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-emerald-900 border border-emerald-500/40 flex items-center justify-center">
                     <Leaf className="w-5 h-5 text-cyan-400 fill-cyan-500/10 animate-pulse" />
                   </div>
                 </div>
@@ -762,7 +775,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
       {/* 4. ACTIONS BAR */}
       {isEditing && (
-        <div className="flex items-center justify-end gap-3 p-5 bg-white border border-slate-200 rounded-2xl shadow-3xs">
+        <div className="flex items-center justify-end gap-3 p-5 bg-white border border-cyan-200 rounded-2xl shadow-md">
           <button
             onClick={handleCancel}
             className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold"
@@ -772,7 +785,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           </button>
           <button
             onClick={handleSave}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-mono text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 font-bold shadow-md hover:shadow-lg cursor-pointer"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white font-mono text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 font-bold shadow-md hover:shadow-lg cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>Guardar Configuración</span>
