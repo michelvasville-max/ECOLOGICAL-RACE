@@ -995,17 +995,26 @@ export default function App() {
                 onGuardarReaccionFoto={guardarReaccionFoto}
                 onEliminarReaccionFoto={eliminarReaccionFoto}
                 onReaccionarComentario={handleReaccionarComentario}
-                iniciarSesionConGoogle={async () => {
+                iniciarSesionConGoogle={async (nickname?: string) => {
+                  if (nickname) {
+                    setUsuarioGoogle({
+                      uid: `sim-google-${Date.now()}`,
+                      displayName: nickname,
+                      email: `${nickname.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+                      photoURL: null
+                    } as any);
+                    return;
+                  }
                   try {
                     await iniciarSesionConGoogle();
                   } catch (err: any) {
                     console.warn("Popup signin failed, trying fallback: ", err);
-                    const nickname = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
-                    if (nickname && nickname.trim()) {
+                    const nicknamePrompt = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
+                    if (nicknamePrompt && nicknamePrompt.trim()) {
                       setUsuarioGoogle({
                         uid: `sim-google-${Date.now()}`,
-                        displayName: nickname.trim(),
-                        email: `${nickname.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+                        displayName: nicknamePrompt.trim(),
+                        email: `${nicknamePrompt.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
                         photoURL: null
                       } as any);
                     }

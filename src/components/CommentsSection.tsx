@@ -15,7 +15,7 @@ interface Props {
   onActualizarEstadoComentario?: (id: string, estado: 'pendiente' | 'aprobado') => void;
   usuarioGoogle: FirebaseUser | null;
   onReaccionarComentario?: (comentarioId: string, tipo: 'like' | 'dislike') => void;
-  iniciarSesionConGoogle?: () => Promise<void>;
+  iniciarSesionConGoogle?: (nickname?: string) => Promise<void>;
 }
 
 export default function CommentsSection({
@@ -32,6 +32,7 @@ export default function CommentsSection({
   iniciarSesionConGoogle,
 }: Props) {
   const [texto, setTexto] = useState('');
+  const [nombreInstantaneo, setNombreInstantaneo] = useState('');
 
   const filtrarComentarios = comentarios.filter(
     (c) => c.referenciaId === referenciaId && c.referenciaTipo === referenciaTipo
@@ -148,16 +149,51 @@ export default function CommentsSection({
           <Info className="w-8 h-8 text-amber-500 mb-2" />
           <h6 className="text-xs font-bold text-slate-800 uppercase font-mono tracking-wider">Identificación Obligatoria</h6>
           <p className="text-xs text-slate-500 max-w-sm mt-1 mb-3">
-            Debes iniciar sesión con Google para poder comentar sobre los pesajes o reaccionar a los comentarios de la comunidad.
+            Debes identificarte para poder comentar sobre los pesajes o reaccionar a los comentarios de la comunidad.
           </p>
+          
           <button
             type="button"
-            onClick={iniciarSesionConGoogle}
+            onClick={() => iniciarSesionConGoogle?.()}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md cursor-pointer flex items-center space-x-2"
           >
             <span className="font-bold text-emerald-100 font-mono">G</span>
             <span>Iniciar Sesión con Google</span>
           </button>
+
+          <div className="w-full flex items-center my-4 text-slate-400 text-[9px] font-mono font-bold max-w-xs">
+            <div className="flex-1 border-t border-slate-200"></div>
+            <span className="px-2">O REGÍSTRATE AL INSTANTE</span>
+            <div className="flex-1 border-t border-slate-200"></div>
+          </div>
+
+          <div className="w-full max-w-xs space-y-2 text-left">
+            <label className="block text-[10px] font-mono text-slate-400 uppercase font-bold text-center">
+              ¿Problemas con Google? Ingresa tu nombre:
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ej: Michel Vasville"
+                value={nombreInstantaneo}
+                onChange={(e) => setNombreInstantaneo(e.target.value)}
+                className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white text-slate-800"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (nombreInstantaneo.trim()) {
+                    iniciarSesionConGoogle?.(nombreInstantaneo.trim());
+                  } else {
+                    alert("Por favor, escribe tu nombre para registrarte.");
+                  }
+                }}
+                className="bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition cursor-pointer shrink-0"
+              >
+                Entrar
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs">
