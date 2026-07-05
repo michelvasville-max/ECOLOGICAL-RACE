@@ -571,12 +571,7 @@ export default function App() {
                     try {
                       await iniciarSesionConGoogle();
                     } catch (err: any) {
-                      console.warn("Popup signin blocked or failed:", err);
-                      alert(
-                        "No se pudo abrir la ventana de Google.\n\n" +
-                        "Esto suele suceder porque el navegador bloquea las ventanas emergentes (popups) dentro de marcos integrados (iframes).\n\n" +
-                        "Por favor, haz clic en el botón 'Abrir en pestaña nueva' (en la esquina superior derecha de la pantalla de vista previa) para poder iniciar sesión con tu correo personal real de forma 100% segura."
-                      );
+                      console.warn("Google login failed or cancelled:", err);
                     }
                   }}
                   className="bg-white border border-slate-300 hover:border-emerald-500/50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold text-xs px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 shadow-3xs"
@@ -995,12 +990,7 @@ export default function App() {
                   try {
                     await iniciarSesionConGoogle();
                   } catch (err: any) {
-                    console.warn("Popup signin blocked or failed:", err);
-                    alert(
-                      "No se pudo abrir la ventana de Google.\n\n" +
-                      "Esto suele suceder porque el navegador bloquea las ventanas emergentes (popups) dentro de marcos integrados (iframes).\n\n" +
-                      "Por favor, haz clic en el botón 'Abrir en pestaña nueva' (en la esquina superior derecha de la pantalla de vista previa) para poder iniciar sesión con tu correo personal real de forma 100% segura."
-                    );
+                    console.warn("Google login failed or cancelled:", err);
                   }
                 }}
               />

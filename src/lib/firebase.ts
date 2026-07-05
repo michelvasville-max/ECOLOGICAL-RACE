@@ -18,7 +18,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
 import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto } from '../types';
 import { ProyectoMetadata } from '../components/NuestroProyectoTab';
 
@@ -284,9 +284,60 @@ export async function eliminarReaccionFoto(id: string) {
   await deleteDoc(doc(db, 'reacciones_fotos', id));
 }
 
-export function iniciarSesionConGoogle() {
+export async function iniciarSesionConGoogle() {
   const provider = new GoogleAuthProvider();
-  return signInWithPopup(auth, provider);
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
+
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (error: any) {
+    console.warn("signInWithPopup failed, checking fallback options. Error code:", error.code, error);
+
+    // 1. Si el dominio no está autorizado, mostrar instrucciones precisas e inmediatas
+    if (error.code === 'auth/unauthorized-domain') {
+      const host = window.location.hostname;
+      alert(
+        `⚠️ ERROR DE CONFIGURACIÓN DE FIREBASE ⚠️\n\n` +
+        `El dominio actual "${host}" no está autorizado en tu proyecto de Firebase.\n\n` +
+        `Para solucionarlo y poder usar tus cuentas de correo personales reales, por favor sigue estos 4 sencillos pasos:\n\n` +
+        `1. Ve a la Consola de Firebase: https://console.firebase.google.com/\n` +
+        `2. Entra a tu proyecto de Firebase.\n` +
+        `3. Ve al menú izquierdo: "Authentication" -> pestaña "Settings" (Configuración).\n` +
+        `4. Busca la sección "Authorized domains" (Dominios autorizados), haz clic en "Add domain" (Agregar dominio) e ingresa exactamente:\n` +
+        `   ${host}\n\n` +
+        `¡Una vez guardado, podrás iniciar sesión con tu cuenta de Google real al instante!`
+      );
+      throw error;
+    }
+
+    // 2. Si el proveedor de Google no está activado
+    if (error.code === 'auth/operation-not-allowed') {
+      alert(
+        `⚠️ PROVEEDOR DE GOOGLE DESACTIVADO ⚠️\n\n` +
+        `El inicio de sesión con Google no está activado en tu proyecto de Firebase.\n\n` +
+        `Para solucionarlo:\n` +
+        `1. Ve a la Consola de Firebase -> Authentication -> pestaña "Sign-in method".\n` +
+        `2. Haz clic en "Add new provider" (Agregar nuevo proveedor) y selecciona "Google".\n` +
+        `3. Actívalo, guarda la configuración y vuelve a intentar.`
+      );
+      throw error;
+    }
+
+    // 3. Si el popup fue bloqueado por el navegador o cerrado, intentar con redireccionamiento automático
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+      try {
+        console.log("Popup blocked or closed. Falling back to signInWithRedirect...");
+        return await signInWithRedirect(auth, provider);
+      } catch (redirectError: any) {
+        console.error("signInWithRedirect also failed:", redirectError);
+        throw redirectError;
+      }
+    }
+
+    throw error;
+  }
 }
 
 export function cerrarSesion() {
