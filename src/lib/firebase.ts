@@ -18,27 +18,30 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo } from '../types';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto } from '../types';
 import { ProyectoMetadata } from '../components/NuestroProyectoTab';
 
 // Valores por defecto provistos por AI Studio (pueden ser sobreescritos por variables .env)
 const env = (import.meta as any).env || {};
 
+export const isFirebaseConfigured = !!env.VITE_FIREBASE_API_KEY;
+
 const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || "AIzaSyCQVNhD6o-JVqlH4SCkkrYGm-1Iet1EZYE",
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "quesomaps.firebaseapp.com",
-  projectId: env.VITE_FIREBASE_PROJECT_ID || "quesomaps",
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "quesomaps.firebasestorage.app",
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "317739893844",
-  appId: env.VITE_FIREBASE_APP_ID || "1:317739893844:web:79c972d3d3e647560899c1"
+  apiKey: env.VITE_FIREBASE_API_KEY || "",
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: env.VITE_FIREBASE_APP_ID || ""
 };
 
 const app = initializeApp(firebaseConfig);
 
-// Inicializamos Firestore con soporte para la base de datos específica provista si se especifica
-const customDbId = "ai-studio-ecologicalrace-84766a4e-0598-48c4-aaf3-613a5006642e";
-export const db = getFirestore(app, customDbId);
+// Inicializamos Firestore usando la base de datos "(default)" estándar
+export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const auth = getAuth(app);
 
 // === FUNCIONES AUXILIARES DE SUBIDA DE IMÁGENES A FIREBASE STORAGE ===
 
@@ -254,6 +257,38 @@ export async function guardarMiembroEquipo(miembro: IntegranteEquipo) {
   await setDoc(doc(db, 'equipo', miembro.id), miembro);
 }
 
+export function escucharReaccionesFotos(onUpdate: (data: ReaccionFoto[]) => void) {
+  return onSnapshot(collection(db, 'reacciones_fotos'), 
+    (snapshot) => {
+      const list: ReaccionFoto[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as ReaccionFoto);
+      });
+      onUpdate(list);
+    },
+    (error) => {
+      console.warn("Firestore error in escucharReaccionesFotos (using fallback):", error);
+    }
+  );
+}
+
+export async function guardarReaccionFoto(reac: ReaccionFoto) {
+  await setDoc(doc(db, 'reacciones_fotos', reac.id), reac);
+}
+
+export async function eliminarReaccionFoto(id: string) {
+  await deleteDoc(doc(db, 'reacciones_fotos', id));
+}
+
+export function iniciarSesionConGoogle() {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
+}
+
+export function cerrarSesion() {
+  return signOut(auth);
+}
+
 export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
   await setDoc(doc(db, 'proyecto_metadata', 'default'), {
     logoUrl: metadata.logoUrl || '',
@@ -277,7 +312,7 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
  * dejando la base de datos vacía y lista para uso real en producción.
  */
 export async function vaciarColeccionesDePrueba() {
-  const colecciones = ['aulas', 'registros', 'comentarios', 'equipo'];
+  const colecciones = ['aulas', 'registros', 'comentarios', 'equipo', 'reacciones_fotos'];
   for (const colName of colecciones) {
     try {
       const snap = await getDocs(collection(db, colName));

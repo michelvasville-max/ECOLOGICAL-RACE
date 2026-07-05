@@ -47,7 +47,7 @@ export default function FuturisticImageSlider() {
     <div className="space-y-4" id="slider-and-materials-block">
       {/* 1. THE SLIDER (WITHOUT DARK OVERLAYS / FILTERS OVER IMAGE) */}
       <div 
-        className="relative w-full h-[260px] md:h-[340px] bg-neutral-900 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 group/slider"
+        className="relative w-full h-[260px] md:h-[340px] bg-emerald-950 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 group/slider"
         id="futuristic-image-slider-container"
       >
         {/* Slide Images Container */}
@@ -71,7 +71,7 @@ export default function FuturisticImageSlider() {
 
               {/* High-contrast Elegant Overlay behind text only */}
               <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 max-w-xl select-none">
-                <div className="bg-slate-950/85 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white/10 shadow-2xl space-y-1.5">
+                <div className="bg-emerald-950/90 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white/10 shadow-2xl space-y-1.5">
                   <span className="inline-flex items-center gap-1.5 text-[9px] font-mono font-black tracking-[0.2em] text-emerald-400 uppercase">
                     <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                     {SLIDE_IMAGES[currentIndex].title}

@@ -134,7 +134,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
       tiktokUser: metadata.tiktokUser || '@ecologicalrace',
       tiktokUrl: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace',
       instagramUser: metadata.instagramUser || '@ecologicalrace',
-      instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/instagram'
+      instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
     });
     setIsEditing(false);
   };
@@ -165,7 +165,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           </div>
 
           {rolActual === 'ADMIN' && (
-            <label className="absolute inset-0 bg-slate-950/70 text-white flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition rounded-2xl cursor-pointer text-center p-2 z-10">
+            <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition rounded-2xl cursor-pointer text-center p-2 z-10">
               <Upload className="w-5 h-5 text-emerald-400" />
               <span className="text-[9px] font-mono font-bold tracking-wider">
                 {subiendoLogo ? 'SUBIENDO...' : 'SUBIR LOGO'}
@@ -261,13 +261,13 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             />
             
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+            <div className="absolute inset-0 bg-linear-to-t from-emerald-950/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-emerald-900/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
               Ilustración Misión
             </div>
 
             {rolActual === 'ADMIN' && (
-              <label className="absolute inset-0 bg-slate-950/70 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
+              <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
                 <Upload className="w-6 h-6 text-emerald-400" />
                 <span className="text-xs font-mono font-bold tracking-wider">
                   {subiendoMision ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
@@ -289,13 +289,13 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             />
             
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+            <div className="absolute inset-0 bg-linear-to-t from-emerald-950/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-4 text-white text-[10px] font-mono bg-emerald-900/80 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
               Ilustración Visión
             </div>
 
             {rolActual === 'ADMIN' && (
-              <label className="absolute inset-0 bg-slate-950/70 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
+              <label className="absolute inset-0 bg-emerald-950/75 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-10">
                 <Upload className="w-6 h-6 text-emerald-400" />
                 <span className="text-xs font-mono font-bold tracking-wider">
                   {subiendoVision ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
@@ -554,7 +554,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-3xl bg-slate-950 border border-slate-800 p-6 md:p-8 shadow-[0_0_30px_rgba(16,185,129,0.04)] hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] transition-all duration-500 flex flex-col justify-between group"
+          className="relative overflow-hidden rounded-3xl bg-emerald-950 border border-emerald-800/40 p-6 md:p-8 shadow-[0_0_30px_rgba(16,185,129,0.06)] hover:shadow-[0_0_30px_rgba(16,185,129,0.12)] transition-all duration-500 flex flex-col justify-between group"
         >
           {/* Cyberpunk Grid Background Overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none rounded-3xl" />
@@ -565,11 +565,11 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
           <div className="relative z-10 space-y-6">
             {/* HUD Header */}
-            <div className="flex items-center justify-between border-b border-emerald-500/10 pb-4">
+            <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute -inset-1.5 rounded-full bg-emerald-500/20 blur-xs animate-pulse" />
-                  <div className="w-10 h-10 rounded-full bg-slate-900 border border-emerald-500/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-emerald-900 border border-emerald-500/40 flex items-center justify-center">
                     <Flame className="w-5 h-5 text-emerald-400 fill-emerald-500/10 animate-pulse" />
                   </div>
                 </div>
@@ -600,16 +600,16 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               {/* Plástico Card */}
               <motion.div 
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-slate-900/40 border border-slate-800/80 hover:border-emerald-500/30 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
+                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-emerald-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
               >
                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-emerald-500/30 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-emerald-500/40 transition-colors">
                   <div className="absolute inset-0 bg-emerald-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   🥤
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-200 tracking-wider uppercase font-display">Plástico</span>
-                  <div className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
+                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Plástico</span>
+                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
                   <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-emerald-500/5 border border-emerald-500/20 mt-1">
                     <span className="text-xs font-mono font-black text-emerald-400 tracking-tight">1.5 kg CO₂</span>
                   </div>
@@ -619,16 +619,16 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               {/* Aluminio Card */}
               <motion.div 
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-slate-900/40 border border-slate-800/80 hover:border-cyan-500/30 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
+                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-cyan-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
               >
                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-cyan-500/30 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-cyan-500/40 transition-colors">
                   <div className="absolute inset-0 bg-cyan-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   🥫
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-200 tracking-wider uppercase font-display">Aluminio</span>
-                  <div className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
+                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Aluminio</span>
+                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
                   <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-cyan-500/5 border border-cyan-500/20 mt-1">
                     <span className="text-xs font-mono font-black text-cyan-400 tracking-tight">9.0 kg CO₂</span>
                   </div>
@@ -638,16 +638,16 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               {/* Papel/Cartón Card */}
               <motion.div 
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-slate-900/40 border border-slate-800/80 hover:border-teal-500/30 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
+                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-teal-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
               >
                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-teal-500/30 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-teal-500/40 transition-colors">
                   <div className="absolute inset-0 bg-teal-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   📦
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-200 tracking-wider uppercase font-display">Papel/Cartón</span>
-                  <div className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
+                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Papel/Cartón</span>
+                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
                   <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-teal-500/5 border border-teal-500/20 mt-1">
                     <span className="text-xs font-mono font-black text-teal-400 tracking-tight">1.0 kg CO₂</span>
                   </div>
@@ -664,7 +664,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-3xl bg-slate-950 border border-slate-800 p-6 md:p-8 shadow-[0_0_30px_rgba(6,182,212,0.04)] hover:shadow-[0_0_30px_rgba(6,182,212,0.08)] transition-all duration-500 flex flex-col justify-between group"
+          className="relative overflow-hidden rounded-3xl bg-emerald-950 border border-emerald-800/40 p-6 md:p-8 shadow-[0_0_30px_rgba(6,182,212,0.06)] hover:shadow-[0_0_30px_rgba(6,182,212,0.12)] transition-all duration-500 flex flex-col justify-between group"
         >
           {/* Cyberpunk Grid Background Overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none rounded-3xl" />
@@ -675,11 +675,11 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
           <div className="relative z-10 space-y-6">
             {/* HUD Header */}
-            <div className="flex items-center justify-between border-b border-cyan-500/10 pb-4">
+            <div className="flex items-center justify-between border-b border-cyan-500/15 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute -inset-1.5 rounded-full bg-cyan-500/20 blur-xs animate-pulse" />
-                  <div className="w-10 h-10 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-emerald-900 border border-cyan-500/40 flex items-center justify-center">
                     <Leaf className="w-5 h-5 text-cyan-400 fill-cyan-500/10 animate-pulse" />
                   </div>
                 </div>
@@ -708,9 +708,9 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
             <div className="space-y-3 pt-2">
               
               {/* Item 1 */}
-              <div className="relative group/line overflow-hidden bg-slate-900/30 rounded-2xl p-4 border border-slate-800/80 hover:border-cyan-500/20 transition-all duration-300 flex items-center gap-4">
+              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
                 <div className="absolute inset-y-0 left-0 w-[3px] bg-yellow-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-850 flex items-center justify-center text-yellow-400 shrink-0 relative shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-yellow-400 shrink-0 relative shadow-sm">
                   <div className="absolute inset-0 bg-yellow-500/5 rounded-xl" />
                   <Zap className="w-5 h-5 fill-yellow-500/10" />
                 </div>
@@ -719,14 +719,14 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                     Apagar Luces
                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">Apagar las luces cuando no se usan.</p>
+                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Apagar las luces cuando no se usan.</p>
                 </div>
               </div>
 
               {/* Item 2 */}
-              <div className="relative group/line overflow-hidden bg-slate-900/30 rounded-2xl p-4 border border-slate-800/80 hover:border-cyan-500/20 transition-all duration-300 flex items-center gap-4">
+              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
                 <div className="absolute inset-y-0 left-0 w-[3px] bg-cyan-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-850 flex items-center justify-center text-cyan-400 shrink-0 relative shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-cyan-400 shrink-0 relative shadow-sm">
                   <div className="absolute inset-0 bg-cyan-500/5 rounded-xl" />
                   <Droplet className="w-5 h-5 fill-cyan-500/10" />
                 </div>
@@ -735,14 +735,14 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                     Cerrar Caños
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">Cerrar bien los caños de agua.</p>
+                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Cerrar bien los caños de agua.</p>
                 </div>
               </div>
 
               {/* Item 3 */}
-              <div className="relative group/line overflow-hidden bg-slate-900/30 rounded-2xl p-4 border border-slate-800/80 hover:border-cyan-500/20 transition-all duration-300 flex items-center gap-4">
+              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
                 <div className="absolute inset-y-0 left-0 w-[3px] bg-emerald-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-850 flex items-center justify-center text-emerald-400 shrink-0 relative shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 shrink-0 relative shadow-sm">
                   <div className="absolute inset-0 bg-emerald-500/5 rounded-xl" />
                   <FileText className="w-5 h-5" />
                 </div>
@@ -751,7 +751,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                     Uso Responsable del Papel
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">Usar el papel de forma responsable (ambas caras, sin desperdiciar).</p>
+                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Usar el papel de forma responsable (ambas caras, sin desperdiciar).</p>
                 </div>
               </div>
 

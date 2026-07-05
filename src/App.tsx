@@ -13,6 +13,7 @@ import {
   Comentario,
   IntegranteEquipo,
   RolUsuario,
+  ReaccionFoto,
 } from './types';
 import LeaderboardCompare, { AulaStats } from './components/LeaderboardCompare';
 import ClassroomRow from './components/ClassroomRow';
@@ -26,6 +27,8 @@ import NuestroProyectoTab, { ProyectoMetadata } from './components/NuestroProyec
 import FuturisticImageSlider from './components/FuturisticImageSlider';
 import NeonLogo from './components/NeonLogo';
 
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+
 import {
   escucharInstituciones,
   escucharAulas,
@@ -33,18 +36,25 @@ import {
   escucharComentarios,
   escucharEquipo,
   escucharProyectoMetadata,
+  escucharReaccionesFotos,
   guardarInstitucion,
   guardarAula,
   guardarRegistro,
   guardarComentario,
   guardarMiembroEquipo,
   guardarProyectoMetadata,
+  guardarReaccionFoto,
+  eliminarReaccionFoto,
   actualizarComentario,
   eliminarComentario,
   eliminarAula,
   eliminarInstitucion,
   subirImagenAFirebase,
-  vaciarColeccionesDePrueba
+  vaciarColeccionesDePrueba,
+  iniciarSesionConGoogle,
+  cerrarSesion,
+  auth,
+  isFirebaseConfigured
 } from './lib/firebase';
 
 import {
@@ -68,12 +78,66 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+function getUltimaActualizacionText(registros: RegistroSemanal[]): string {
+  if (!registros || registros.length === 0) {
+    return 'ÚLTIMA ACTUALIZACIÓN: JUE 02 JUL 2026 — 17:30';
+  }
+
+  let latestDate: Date | null = null;
+  let hasUpdatedAt = false;
+
+  for (const reg of registros) {
+    let d: Date;
+    if (reg.updatedAt) {
+      d = new Date(reg.updatedAt);
+      if (!isNaN(d.getTime())) {
+        if (!latestDate || !hasUpdatedAt || d > latestDate) {
+          latestDate = d;
+          hasUpdatedAt = true;
+        }
+      }
+    } else if (reg.fecha && !hasUpdatedAt) {
+      const parts = reg.fecha.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        d = new Date(year, month, day, 17, 30);
+        if (!isNaN(d.getTime())) {
+          if (!latestDate || d > latestDate) {
+            latestDate = d;
+          }
+        }
+      }
+    }
+  }
+
+  if (!latestDate) {
+    return 'ÚLTIMA ACTUALIZACIÓN: JUE 02 JUL 2026 — 17:30';
+  }
+
+  const dias = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+  const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SET', 'OCT', 'NOV', 'DIC'];
+
+  const diaSemana = dias[latestDate.getDay()];
+  const diaNum = String(latestDate.getDate()).padStart(2, '0');
+  const mesName = meses[latestDate.getMonth()];
+  const anio = latestDate.getFullYear();
+  const horas = String(latestDate.getHours()).padStart(2, '0');
+  const minutos = String(latestDate.getMinutes()).padStart(2, '0');
+
+  return `ÚLTIMA ACTUALIZACIÓN: ${diaSemana} ${diaNum} ${mesName} ${anio} — ${horas}:${minutos}`;
+}
+
 export default function App() {
   // --- STATE PERSISTENCE & FIREBASE ---
   const [rolActual, setRolActual] = useState<RolUsuario>(() => {
     const saved = localStorage.getItem('eco_race_rol');
     return (saved as RolUsuario) || 'VISITANTE';
   });
+
+  const [usuarioGoogle, setUsuarioGoogle] = useState<FirebaseUser | null>(null);
+  const [reaccionesFotos, setReaccionesFotos] = useState<ReaccionFoto[]>([]);
 
   const [instituciones, setInstituciones] = useState<Institucion[]>(INITIAL_INSTITUCIONES);
   const [aulas, setAulas] = useState<Aula[]>(INITIAL_AULAS);
@@ -114,6 +178,8 @@ export default function App() {
 
   // Firebase Real-time listeners & Auto-seeding
   useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
     const unsubInst = escucharInstituciones((data) => {
       if (data.length === 0) {
         INITIAL_INSTITUCIONES.forEach((inst) => guardarInstitucion(inst));
@@ -203,6 +269,14 @@ export default function App() {
       }
     }, fallbackMetadata);
 
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      setUsuarioGoogle(user);
+    });
+
+    const unsubReacciones = escucharReaccionesFotos((data) => {
+      setReaccionesFotos(data);
+    });
+
     return () => {
       unsubInst();
       unsubAulas();
@@ -210,6 +284,8 @@ export default function App() {
       unsubComs();
       unsubEquipo();
       unsubMeta();
+      unsubAuth();
+      unsubReacciones();
     };
   }, []);
 
@@ -281,6 +357,59 @@ export default function App() {
     await eliminarComentario(id);
   };
 
+  const handleReaccionarComentario = async (comentarioId: string, tipo: 'like' | 'dislike') => {
+    if (!usuarioGoogle) {
+      alert("Debes iniciar sesión con Google para reaccionar a los comentarios.");
+      return;
+    }
+
+    const com = comentarios.find(c => c.id === comentarioId);
+    if (!com) return;
+
+    const userUid = usuarioGoogle.uid;
+    const likesUsers = com.likesUsers || [];
+    const dislikesUsers = com.dislikesUsers || [];
+
+    let updatedLikesUsers = [...likesUsers];
+    let updatedDislikesUsers = [...dislikesUsers];
+
+    const alreadyLiked = likesUsers.includes(userUid);
+    const alreadyDisliked = dislikesUsers.includes(userUid);
+
+    if (tipo === 'like') {
+      if (alreadyLiked) {
+        // Toggle off
+        updatedLikesUsers = updatedLikesUsers.filter(uid => uid !== userUid);
+      } else {
+        // Toggle on, and remove from dislike if exists
+        updatedLikesUsers.push(userUid);
+        updatedDislikesUsers = updatedDislikesUsers.filter(uid => uid !== userUid);
+      }
+    } else {
+      if (alreadyDisliked) {
+        // Toggle off
+        updatedDislikesUsers = updatedDislikesUsers.filter(uid => uid !== userUid);
+      } else {
+        // Toggle on, and remove from like if exists
+        updatedDislikesUsers.push(userUid);
+        updatedLikesUsers = updatedLikesUsers.filter(uid => uid !== userUid);
+      }
+    }
+
+    const updates: Partial<Comentario> = {
+      likes: updatedLikesUsers.length,
+      dislikes: updatedDislikesUsers.length,
+      likesUsers: updatedLikesUsers,
+      dislikesUsers: updatedDislikesUsers,
+    };
+
+    try {
+      await actualizarComentario(comentarioId, updates);
+    } catch (err) {
+      console.error("Error al actualizar reacciones de comentario:", err);
+    }
+  };
+
   const handleEliminarAula = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este salón/aula? Se borrarán todos sus pesajes y registros asociados de forma permanente.')) {
       try {
@@ -334,6 +463,36 @@ export default function App() {
     }
   };
 
+  if (!isFirebaseConfigured) {
+    return (
+      <div className="min-h-screen bg-emerald-950 text-slate-100 flex items-center justify-center p-6 font-sans select-none" id="firebase-error-fallback">
+        <div className="max-w-md w-full bg-emerald-900/40 border border-emerald-500/30 rounded-2xl p-6 shadow-[0_4px_25px_rgba(16,185,129,0.15)] text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-950/80 border border-red-500/40 text-red-400 mb-2">
+            <AlertCircle className="w-6 h-6 animate-pulse" />
+          </div>
+          <h2 className="text-lg font-bold font-display tracking-tight text-white uppercase">
+            Error de Configuración
+          </h2>
+          <p className="text-xs text-slate-300 leading-relaxed font-semibold">
+            Error: Firebase no está configurado correctamente. Verifica las variables de entorno.
+          </p>
+          <p className="text-[11px] text-slate-450 font-mono">
+            La aplicación no ha detectado las credenciales válidas en las variables VITE_FIREBASE_*. Para evitar conectarse a proyectos incorrectos, se ha bloqueado la carga de la aplicación.
+          </p>
+          <div className="bg-emerald-950/80 border border-emerald-800 p-3 rounded-lg text-left space-y-1 text-[10px] font-mono text-slate-300">
+            <span className="text-slate-300 font-bold block mb-1">Variables requeridas:</span>
+            <div>• VITE_FIREBASE_API_KEY</div>
+            <div>• VITE_FIREBASE_AUTH_DOMAIN</div>
+            <div>• VITE_FIREBASE_PROJECT_ID</div>
+            <div>• VITE_FIREBASE_STORAGE_BUCKET</div>
+            <div>• VITE_FIREBASE_MESSAGING_SENDER_ID</div>
+            <div>• VITE_FIREBASE_APP_ID</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 antialiased selection:bg-emerald-600 selection:text-white" id="ecological-race-root">
       
@@ -347,7 +506,7 @@ export default function App() {
             </span>
           </div>
           <div className="flex items-center gap-3 md:w-1/3 justify-end">
-            <span className="text-[10px] font-mono opacity-75">ÚLTIMA ACTUALIZACIÓN: JUE 02 JUL 2026 — 17:30</span>
+            <span className="text-[10px] font-mono opacity-75">{getUltimaActualizacionText(registros)}</span>
           </div>
         </div>
       </div>
@@ -375,6 +534,62 @@ export default function App() {
 
           {/* Admin Switcher Panel (Direct toggle per instructions to avoid credentials hurdles) */}
           <div className="flex items-center space-x-3.5 bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-2xs" id="quick-role-panel">
+            {/* Google Session indicator */}
+            <div className="flex items-center space-x-2 border-r border-slate-200 pr-3.5 mr-0.5">
+              {usuarioGoogle ? (
+                <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
+                  {usuarioGoogle.photoURL ? (
+                    <img
+                      src={usuarioGoogle.photoURL}
+                      alt={usuarioGoogle.displayName || 'Google User'}
+                      className="w-5 h-5 rounded-full border border-emerald-500"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-mono font-bold">
+                      {usuarioGoogle.displayName?.charAt(0) || 'G'}
+                    </div>
+                  )}
+                  <div className="text-left leading-none">
+                    <span className="text-[8px] font-mono font-bold text-slate-400 block uppercase">CONEXIÓN GOOGLE</span>
+                    <span className="text-xs font-bold text-slate-800 font-sans block truncate max-w-[85px]" title={usuarioGoogle.displayName || ''}>
+                      {usuarioGoogle.displayName?.split(' ')[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={cerrarSesion}
+                    className="text-slate-400 hover:text-red-600 font-mono text-[9px] font-bold p-0.5 ml-1 cursor-pointer"
+                    title="Cerrar sesión de Google"
+                  >
+                    Salir
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={async () => {
+                    try {
+                      await iniciarSesionConGoogle();
+                    } catch (err: any) {
+                      console.warn("Popup signin failed, trying fallback: ", err);
+                      const nickname = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
+                      if (nickname && nickname.trim()) {
+                        setUsuarioGoogle({
+                          uid: `sim-google-${Date.now()}`,
+                          displayName: nickname.trim(),
+                          email: `${nickname.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+                          photoURL: null
+                        } as any);
+                      }
+                    }
+                  }}
+                  className="bg-white border border-slate-300 hover:border-emerald-500/50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold text-xs px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center space-x-1.5 shadow-3xs"
+                >
+                  <span className="w-3.5 h-3.5 flex items-center justify-center font-bold text-[10px] text-blue-600 bg-slate-100 rounded-full border border-slate-200">G</span>
+                  <span>Google Login</span>
+                </button>
+              )}
+            </div>
+
             <div className="text-right">
               <div className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">TIPO DE ACCESO</div>
               <div className="text-xs font-semibold text-slate-800 flex items-center space-x-1 justify-end">
@@ -433,7 +648,7 @@ export default function App() {
       </header>
 
       {/* 3. MENÚ HORIZONTAL DE NAVEGACIÓN (Futuristic Dark Neon style) */}
-      <nav className="bg-neutral-950/95 backdrop-blur-md border-b border-emerald-500/30 sticky top-0 z-40 shadow-[0_4px_20px_rgba(16,185,129,0.15)]" id="navbar-onpe">
+      <nav className="bg-emerald-950/95 backdrop-blur-md border-b border-emerald-500/40 sticky top-0 z-40 shadow-[0_4px_20px_rgba(16,185,129,0.2)]" id="navbar-onpe">
         <div className="max-w-7xl mx-auto px-6 overflow-x-auto">
           <div className="flex space-x-6 py-3.5 whitespace-nowrap">
             <button
@@ -469,7 +684,7 @@ export default function App() {
               }`}
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Actas y Evidencias</span>
+              <span>Reportes Semanales y Evidencias</span>
             </button>
 
             <button
@@ -555,7 +770,7 @@ export default function App() {
                   return (
                     <div
                       key={inst.id}
-                      className="bg-neutral-950 border border-emerald-500/30 rounded-3xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.05)] hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] hover:border-emerald-400/50 transition-all duration-300 relative flex flex-col justify-between min-h-[340px] text-white overflow-hidden"
+                      className="bg-emerald-950 border border-emerald-500/35 rounded-3xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.08)] hover:shadow-[0_0_25px_rgba(16,185,129,0.2)] hover:border-emerald-400/70 transition-all duration-300 relative flex flex-col justify-between min-h-[340px] text-white overflow-hidden"
                     >
                       {/* Background wrap to prevent overflow-hidden blocking the popover */}
                       <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none z-0">
@@ -573,7 +788,7 @@ export default function App() {
                             <h4 className="text-base font-black text-white uppercase tracking-tight truncate font-display">
                               {inst.nombre}
                             </h4>
-                            <p className="text-[10px] text-slate-300 italic font-medium leading-tight line-clamp-2 border-l-2 border-emerald-400 pl-2 bg-emerald-950/20 py-0.5">
+                            <p className="text-[10px] text-slate-200 italic font-medium leading-tight line-clamp-2 border-l-2 border-emerald-400 pl-2 bg-emerald-950/20 py-0.5">
                               "{inst.slogan || '¡Compromiso ecológico y lema ambiental!'}"
                             </p>
                           </div>
@@ -588,11 +803,11 @@ export default function App() {
                             />
 
                             {/* Tooltip */}
-                            <div className="absolute bottom-full right-0 mb-4 hidden group-hover/logo:flex flex-col bg-neutral-900 text-white text-xs rounded-2xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-emerald-500/45 z-50 w-64 pointer-events-none animate-fade-in font-mono">
-                              <span className="font-extrabold text-[10px] text-emerald-400 uppercase tracking-widest mb-3 pb-2 border-b border-neutral-850 block">
+                            <div className="absolute bottom-full right-0 mb-4 hidden group-hover/logo:flex flex-col bg-emerald-900 text-white text-xs rounded-2xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-emerald-500/50 z-50 w-64 pointer-events-none animate-fade-in font-mono">
+                              <span className="font-extrabold text-[10px] text-emerald-400 uppercase tracking-widest mb-3 pb-2 border-b border-emerald-950 block">
                                 Resumen de Sede
                               </span>
-                              <div className="space-y-3.5 text-[10px] text-slate-300 leading-normal">
+                              <div className="space-y-3.5 text-[10px] text-slate-200 leading-normal">
                                 <div className="flex justify-between items-center">
                                   <span>💰 Fondo Común:</span>
                                   <span className="font-bold text-amber-300">S/. {totalSoles.toFixed(2)}</span>
@@ -606,7 +821,7 @@ export default function App() {
                                   <span className="font-bold text-blue-400">{percentSchoolGoal.toFixed(1)}%</span>
                                 </div>
                               </div>
-                              <div className="w-2.5 h-2.5 bg-neutral-900 border-r border-b border-emerald-500/30 rotate-45 absolute top-full right-6 -translate-y-1.5" />
+                              <div className="w-2.5 h-2.5 bg-emerald-900 border-r border-b border-emerald-500/40 rotate-45 absolute top-full right-6 -translate-y-1.5" />
                             </div>
                           </div>
                         </div>
@@ -617,7 +832,7 @@ export default function App() {
                             <span>Progreso Sede</span>
                             <span className="font-bold text-emerald-400">{percentSchoolGoal.toFixed(1)}%</span>
                           </div>
-                          <div className="w-full h-2.5 bg-neutral-900 border border-neutral-800 rounded-full overflow-hidden relative">
+                          <div className="w-full h-2.5 bg-emerald-950 border border-emerald-900 rounded-full overflow-hidden relative">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${percentSchoolGoal}%` }}
@@ -773,6 +988,28 @@ export default function App() {
                 onActualizarEstadoComentario={handleActualizarEstadoComentario}
                 onEditarRegistro={handleEditarRegistroTrigger}
                 onNuevoRegistro={handleNuevoRegistroTrigger}
+                onGuardarRegistro={guardarRegistro}
+                usuarioGoogle={usuarioGoogle}
+                reaccionesFotos={reaccionesFotos}
+                onGuardarReaccionFoto={guardarReaccionFoto}
+                onEliminarReaccionFoto={eliminarReaccionFoto}
+                onReaccionarComentario={handleReaccionarComentario}
+                iniciarSesionConGoogle={async () => {
+                  try {
+                    await iniciarSesionConGoogle();
+                  } catch (err: any) {
+                    console.warn("Popup signin failed, trying fallback: ", err);
+                    const nickname = prompt("Iniciar sesión con Google (Simulador de cuenta): Por favor, ingresa tu Nombre y Apellido:");
+                    if (nickname && nickname.trim()) {
+                      setUsuarioGoogle({
+                        uid: `sim-google-${Date.now()}`,
+                        displayName: nickname.trim(),
+                        email: `${nickname.trim().toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+                        photoURL: null
+                      } as any);
+                    }
+                  }
+                }}
               />
             </motion.div>
           )}
@@ -857,7 +1094,7 @@ export default function App() {
       </main>
 
       {/* 5. FOOTER AND BRAND METADATA */}
-      <footer className="bg-slate-900 text-slate-400 py-10 px-4 mt-auto border-t-4 border-emerald-600" id="main-footer">
+      <footer className="bg-emerald-950 text-slate-300 py-10 px-4 mt-auto border-t-4 border-emerald-600" id="main-footer">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           
           <div className="space-y-3">
@@ -889,7 +1126,7 @@ export default function App() {
             </span>
             <div className="flex flex-col gap-2 pt-1">
               <a
-                href={proyectoMetadata.tiktokUrl || "https://www.tiktok.com/@ecologicalrace"}
+                href={proyectoMetadata.tiktokUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-mono text-slate-300 hover:text-emerald-400 transition"
@@ -897,11 +1134,11 @@ export default function App() {
                 <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
                   <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.43-.17-.11-.32-.23-.48-.36v7.24c0 1.27-.31 2.56-.93 3.65-1.16 2.05-3.5 3.34-5.85 3.17-2.73-.08-5.22-2.12-5.75-4.8-.62-2.78.71-5.86 3.19-7.1 1.02-.53 2.19-.74 3.34-.64V13.8c-.89-.13-1.85.08-2.58.63-.8.56-1.21 1.58-1.07 2.54.14.99.98 1.8 1.96 1.89 1.15.11 2.27-.64 2.54-1.74.07-.3.09-.6.09-.9V0h1.88z" />
                 </svg>
-                <span>TikTok: <span className="font-bold text-white">{proyectoMetadata.tiktokUser || "@ecologicalrace"}</span></span>
+                <span>TikTok: <span className="font-bold text-white">{proyectoMetadata.tiktokUser}</span></span>
               </a>
 
               <a
-                href={proyectoMetadata.instagramUrl || "https://www.instagram.com/ecologicalrace"}
+                href={proyectoMetadata.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-mono text-slate-300 hover:text-emerald-400 transition"
@@ -911,7 +1148,7 @@ export default function App() {
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                 </svg>
-                <span>Instagram: <span className="font-bold text-white">{proyectoMetadata.instagramUser || "@ecologicalrace"}</span></span>
+                <span>Instagram: <span className="font-bold text-white">{proyectoMetadata.instagramUser}</span></span>
               </a>
             </div>
           </div>

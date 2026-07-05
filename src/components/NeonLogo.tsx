@@ -57,7 +57,7 @@ export default function NeonLogo({
 
   return (
     <div 
-      className={`relative rounded-full overflow-hidden border-2 md:border-3 border-emerald-400 bg-neutral-950 flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(16,185,129,0.8),inset_0_0_12px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/20 transition-all duration-300 group-hover:scale-105 ${computedSizeClass} ${className}`}
+      className={`relative rounded-full overflow-hidden border-2 md:border-3 border-emerald-400 bg-emerald-950 flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(16,185,129,0.8),inset_0_0_12px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/20 transition-all duration-300 group-hover:scale-105 ${computedSizeClass} ${className}`}
     >
       {/* Holographic scanner effect line */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/10 to-transparent pointer-events-none animate-pulse z-10" />
@@ -71,7 +71,7 @@ export default function NeonLogo({
           className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.05]"
         />
       ) : (
-        <div className="w-full h-full bg-neutral-950 flex items-center justify-center">
+        <div className="w-full h-full bg-emerald-950 flex items-center justify-center">
           {getFallbackIcon()}
         </div>
       )}

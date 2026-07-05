@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Comentario, RolUsuario } from '../types';
 import { MessageSquare, ShieldCheck, Trash, User, Info, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { User as FirebaseUser } from 'firebase/auth';
 
 interface Props {
   comentarios: Comentario[];
@@ -12,6 +13,9 @@ interface Props {
   onAprobarComentario: (id: string) => void;
   onEliminarComentario: (id: string) => void;
   onActualizarEstadoComentario?: (id: string, estado: 'pendiente' | 'aprobado') => void;
+  usuarioGoogle: FirebaseUser | null;
+  onReaccionarComentario?: (comentarioId: string, tipo: 'like' | 'dislike') => void;
+  iniciarSesionConGoogle?: () => Promise<void>;
 }
 
 export default function CommentsSection({
@@ -23,22 +27,11 @@ export default function CommentsSection({
   onAprobarComentario,
   onEliminarComentario,
   onActualizarEstadoComentario,
+  usuarioGoogle,
+  onReaccionarComentario,
+  iniciarSesionConGoogle,
 }: Props) {
-  const [autor, setAutor] = useState('');
   const [texto, setTexto] = useState('');
-  const [yaComento, setYaComento] = useState(false);
-
-  const storageKey = `coar_co2_comentado_${referenciaTipo}_${referenciaId}`;
-
-  // Check if this device has already commented on this specific entry
-  useEffect(() => {
-    const hasCommented = localStorage.getItem(storageKey);
-    if (hasCommented === 'true') {
-      setYaComento(true);
-    } else {
-      setYaComento(false);
-    }
-  }, [referenciaId, referenciaTipo, storageKey]);
 
   const filtrarComentarios = comentarios.filter(
     (c) => c.referenciaId === referenciaId && c.referenciaTipo === referenciaTipo
@@ -46,33 +39,27 @@ export default function CommentsSection({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!autor.trim()) return;
-    if (!texto.trim()) return;
-
-    // Reject if already commented and not admin
-    if (yaComento && rolActual !== 'ADMIN') {
+    if (!usuarioGoogle) {
+      alert("Debes iniciar sesión con Google para comentar.");
       return;
     }
+    if (!texto.trim()) return;
+
+    const autorName = usuarioGoogle.displayName || usuarioGoogle.email?.split('@')[0] || 'Usuario de Google';
 
     const nuevo: Comentario = {
       id: `com-${Date.now()}`,
       referenciaId,
       referenciaTipo,
-      autor: autor.trim(),
+      autor: autorName,
       texto: texto.trim(),
       fecha: new Date().toISOString(),
       estado: 'pendiente', // Always defaults to 'pendiente' (pending approval)
     };
 
     onAgregarComentario(nuevo);
-    setAutor('');
     setTexto('');
-
-    // Save device comment restriction
-    if (rolActual !== 'ADMIN') {
-      localStorage.setItem(storageKey, 'true');
-      setYaComento(true);
-    }
+    alert("¡Comentario enviado! Se mostrará públicamente una vez aprobado por el Administrador.");
   };
 
   return (
@@ -84,27 +71,27 @@ export default function CommentsSection({
 
       {/* ADMIN PANEL FOR MODERATION (Only visible to ADMIN) */}
       {rolActual === 'ADMIN' && (
-        <div className="bg-slate-900 text-slate-100 rounded-xl p-4 mb-6 border border-emerald-500/30 shadow-lg" id="comment-moderation-panel">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+        <div className="bg-emerald-950 text-slate-100 rounded-xl p-4 mb-6 border border-emerald-500/45 shadow-lg" id="comment-moderation-panel">
+          <div className="flex items-center justify-between border-b border-emerald-900/60 pb-2 mb-3">
             <div className="flex items-center space-x-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold font-mono tracking-wider uppercase text-emerald-400">
                 Panel de Moderación de Comentarios (ADMIN)
               </span>
             </div>
-            <span className="text-[9px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">
+            <span className="text-[9px] font-mono bg-emerald-900 px-2 py-0.5 rounded text-emerald-250">
               Total comentarios: {filtrarComentarios.length}
             </span>
           </div>
           
           <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
             {filtrarComentarios.length === 0 ? (
-              <p className="text-[11px] text-slate-400 italic text-center py-2 font-mono">
+              <p className="text-[11px] text-slate-300 italic text-center py-2 font-mono">
                 No hay comentarios registrados para moderar aquí.
               </p>
             ) : (
               filtrarComentarios.map((com) => (
-                <div key={com.id} className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-850 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                <div key={com.id} className="bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
                   <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                       <span className="font-bold text-slate-200 font-sans text-xs">{com.autor}</span>
@@ -155,63 +142,64 @@ export default function CommentsSection({
         </div>
       )}
 
-      {/* Comment Form or Device Limit Banner */}
-      {yaComento && rolActual !== 'ADMIN' ? (
-        <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-4 mb-6 text-xs text-amber-900 leading-relaxed font-sans shadow-2xs">
-          <div className="flex items-start space-x-2.5">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-amber-950 mb-0.5">Límite de un comentario por dispositivo alcanzado</p>
-              <p className="text-amber-800">
-                Ya has enviado un comentario para este registro desde este dispositivo. Para garantizar la moderación y evitar spam, limitamos las participaciones de forma local.
-              </p>
-              <span className="text-[9px] block mt-1.5 font-mono text-amber-600/85 uppercase tracking-wide">
-                * Nota: Esta limitación es básica del navegador y no evita comentar desde otro dispositivo o red.
-              </span>
-            </div>
-          </div>
+      {/* Comment Form or Google Sign-In Callout */}
+      {!usuarioGoogle ? (
+        <div className="mb-6 bg-white p-5 rounded-xl border border-slate-200/60 shadow-2xs text-center flex flex-col items-center">
+          <Info className="w-8 h-8 text-amber-500 mb-2" />
+          <h6 className="text-xs font-bold text-slate-800 uppercase font-mono tracking-wider">Identificación Obligatoria</h6>
+          <p className="text-xs text-slate-500 max-w-sm mt-1 mb-3">
+            Debes iniciar sesión con Google para poder comentar sobre los pesajes o reaccionar a los comentarios de la comunidad.
+          </p>
+          <button
+            type="button"
+            onClick={iniciarSesionConGoogle}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md cursor-pointer flex items-center space-x-2"
+          >
+            <span className="font-bold text-emerald-100 font-mono">G</span>
+            <span>Iniciar Sesión con Google</span>
+          </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mb-6 bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-            <div className="md:col-span-1">
-              <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1 font-bold">
-                Tu Nombre y Apellido *
-              </label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-2.5 text-slate-400">
-                  <User className="w-4 h-4" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  value={autor}
-                  onChange={(e) => setAutor(e.target.value)}
-                  placeholder="Nombre y Apellido obligatorio"
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white transition font-bold"
-                />
-              </div>
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1 font-bold">
-                Mensaje para el equipo *
-              </label>
-              <input
-                type="text"
-                required
-                value={texto}
-                onChange={(e) => setTexto(e.target.value)}
-                placeholder="Escribe tu consulta o felicitación sobre este pesaje..."
-                className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white transition"
+          <div className="flex items-center space-x-2 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
+            {usuarioGoogle.photoURL ? (
+              <img
+                src={usuarioGoogle.photoURL}
+                alt={usuarioGoogle.displayName || 'Google user'}
+                className="w-6 h-6 rounded-full border border-emerald-500"
+                referrerPolicy="no-referrer"
               />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-emerald-700 text-white font-bold flex items-center justify-center text-[10px]">
+                {usuarioGoogle.displayName?.charAt(0) || 'G'}
+              </div>
+            )}
+            <div className="text-xs">
+              <span className="text-slate-500">Comentando como </span>
+              <strong className="font-extrabold text-slate-800">{usuarioGoogle.displayName}</strong>
+              <span className="text-[10px] text-slate-400 font-mono ml-1">({usuarioGoogle.email})</span>
             </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1 font-bold">
+              Mensaje para el equipo *
+            </label>
+            <input
+              type="text"
+              required
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              placeholder="Escribe tu consulta o felicitación sobre este pesaje..."
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:bg-white transition"
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
             <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5" />
+              <Lock className="w-3.5 h-3.5 animate-pulse" />
               {rolActual === 'ADMIN' 
-                ? '✍️ Comentando como Administrador (Se guardará como pendiente para validar el flujo)' 
+                ? '✍️ Comentando como Administrador (Pasará por el panel de moderación)' 
                 : '⌛ Tu comentario se guardará como pendiente de aprobación por el Administrador.'}
             </span>
             <button
@@ -234,6 +222,9 @@ export default function CommentsSection({
           <AnimatePresence>
             {filtrarComentarios.map((com) => {
               if (com.estado !== 'aprobado') return null;
+
+              const yaLeDioLike = usuarioGoogle && com.likesUsers?.includes(usuarioGoogle.uid);
+              const yaLeDioDislike = usuarioGoogle && com.dislikesUsers?.includes(usuarioGoogle.uid);
 
               return (
                 <motion.div
@@ -258,6 +249,49 @@ export default function CommentsSection({
                   </div>
 
                   <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{com.texto}</p>
+
+                  {/* Comment Reactions */}
+                  <div className="flex items-center space-x-2.5 mt-3 pt-2.5 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!usuarioGoogle) {
+                          alert("Inicia sesión con Google para dar Me gusta.");
+                          iniciarSesionConGoogle?.();
+                        } else {
+                          onReaccionarComentario?.(com.id, 'like');
+                        }
+                      }}
+                      className={`flex items-center space-x-1 text-[11px] font-mono px-2 py-1 rounded-lg border transition cursor-pointer select-none ${
+                        yaLeDioLike
+                          ? 'bg-emerald-500 text-white border-emerald-500 font-bold'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'
+                      }`}
+                    >
+                      <span>👍</span>
+                      <span>{com.likes || 0}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!usuarioGoogle) {
+                          alert("Inicia sesión con Google para dar No me gusta.");
+                          iniciarSesionConGoogle?.();
+                        } else {
+                          onReaccionarComentario?.(com.id, 'dislike');
+                        }
+                      }}
+                      className={`flex items-center space-x-1 text-[11px] font-mono px-2 py-1 rounded-lg border transition cursor-pointer select-none ${
+                        yaLeDioDislike
+                          ? 'bg-red-500 text-white border-red-500 font-bold'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'
+                      }`}
+                    >
+                      <span>👎</span>
+                      <span>{com.dislikes || 0}</span>
+                    </button>
+                  </div>
                 </motion.div>
               );
             })}

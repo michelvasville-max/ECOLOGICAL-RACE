@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Aula, Institucion, RegistroSemanal } from '../types';
-import { X, Calendar, Plus, Scale, Save, Leaf, Coins } from 'lucide-react';
+import { X, Calendar, Plus, Scale, Save, Leaf, Coins, Upload } from 'lucide-react';
 import { motion } from 'motion/react';
+import { subirImagenAFirebase } from '../lib/firebase';
 
 interface Props {
   isOpen: boolean;
@@ -30,6 +31,10 @@ export default function AddLogModal({
   const [multiplicadorVerde, setMultiplicadorVerde] = useState(false);
   const [montoVentaSoles, setMontoVentaSoles] = useState('');
   const [descripcionEvidencia, setDescripcionEvidencia] = useState('');
+  const [fotoEvidenciaUrl, setFotoEvidenciaUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // When editing, fill fields
   useEffect(() => {
@@ -45,6 +50,7 @@ export default function AddLogModal({
       setMultiplicadorVerde(registroParaEditar.multiplicadorVerde);
       setMontoVentaSoles(String(registroParaEditar.montoVentaSoles));
       setDescripcionEvidencia(registroParaEditar.descripcionEvidencia || '');
+      setFotoEvidenciaUrl(registroParaEditar.fotoEvidenciaUrl || '');
     } else {
       // Default blank values
       if (instituciones.length > 0) setInstitucionId(instituciones[0].id);
@@ -57,6 +63,7 @@ export default function AddLogModal({
       setMultiplicadorVerde(false);
       setMontoVentaSoles('');
       setDescripcionEvidencia('');
+      setFotoEvidenciaUrl('');
     }
   }, [registroParaEditar, isOpen, instituciones, aulas]);
 
@@ -69,6 +76,49 @@ export default function AddLogModal({
       setAulaId(aulasFiltradas[0].id);
     }
   }, [institucionId, registroParaEditar]);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setIsDragActive(true);
+    } else if (e.type === "dragleave") {
+      setIsDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      await handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      await handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const url = await subirImagenAFirebase(file, 'evidencias');
+      setFotoEvidenciaUrl(url);
+    } catch (err) {
+      console.error("Error uploading evidence photo:", err);
+      alert("No se pudo subir la foto de evidencia. Intente nuevamente.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
   if (!isOpen) return null;
 
@@ -87,6 +137,8 @@ export default function AddLogModal({
       multiplicadorVerde,
       montoVentaSoles: Number(montoVentaSoles) || 0,
       descripcionEvidencia: descripcionEvidencia.trim(),
+      fotoEvidenciaUrl: fotoEvidenciaUrl || '',
+      updatedAt: new Date().toISOString(),
     };
 
     onGuardarRegistro(reg);
@@ -161,7 +213,7 @@ export default function AddLogModal({
           {/* Timing context */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Número de Reporte / Semana</label>
+              <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Número de Reporte</label>
               <input
                 type="number"
                 min="1"
@@ -281,6 +333,49 @@ export default function AddLogModal({
               onChange={(e) => setDescripcionEvidencia(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
             />
+          </div>
+
+          {/* Foto de Evidencia Upload */}
+          <div>
+            <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Foto de Evidencia (Galería)</label>
+            <div
+              className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition select-none ${
+                isDragActive
+                  ? 'border-emerald-500 bg-emerald-50/50'
+                  : 'border-slate-200 hover:border-emerald-500/50 bg-slate-50'
+              }`}
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              onClick={triggerFileInput}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+              {uploading ? (
+                <div className="text-xs text-slate-500 font-mono animate-pulse">Subiendo imagen...</div>
+              ) : fotoEvidenciaUrl ? (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={fotoEvidenciaUrl}
+                    alt="Vista previa de evidencia"
+                    className="w-full max-h-32 object-cover rounded-lg border border-emerald-500 mb-2"
+                  />
+                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">¡Cargada con éxito! Click para cambiar</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center py-2">
+                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                  <span className="text-xs font-semibold text-slate-600">Arrastra una imagen o haz clic para subir</span>
+                  <span className="text-[9px] text-slate-400 font-mono">JPG, PNG (máx. 10MB)</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Save & Cancel buttons */}

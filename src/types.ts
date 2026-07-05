@@ -32,6 +32,7 @@ export interface RegistroSemanal {
   ticketVentaUrl?: string; // photo of receipt
   fotoEvidenciaUrl?: string; // eco-activity photo (no kids' faces)
   descripcionEvidencia?: string;
+  updatedAt?: string; // Timestamp of latest save/modification
 }
 
 export interface Comentario {
@@ -42,6 +43,19 @@ export interface Comentario {
   texto: string;
   fecha: string;
   estado: 'pendiente' | 'aprobado';
+  likes?: number;
+  dislikes?: number;
+  likesUsers?: string[]; // uids of users who liked
+  dislikesUsers?: string[]; // uids of users who disliked
+}
+
+export interface ReaccionFoto {
+  id: string; // unique ID for the photo (e.g. week number or custom uploaded id)
+  url: string;
+  likes: number;
+  dislikes: number;
+  likesUsers: string[]; // uids of users who liked
+  dislikesUsers: string[]; // uids of users who disliked
 }
 
 export interface IntegranteEquipo {

@@ -17,7 +17,7 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
   return (
     <div className="space-y-8 text-white" id="team-cyber-terminal">
       {/* Top Telemetry Header */}
-      <div className="bg-neutral-950 border border-emerald-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+      <div className="bg-emerald-950 border border-emerald-500/40 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-[0_0_15px_rgba(16,185,129,0.08)]">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
             <Cpu className="w-5 h-5 animate-spin" style={{ animationDuration: '6s' }} />
@@ -57,7 +57,7 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
         </div>
 
         {asesoras.length === 0 ? (
-          <div className="bg-neutral-950/50 border border-dashed border-emerald-500/20 rounded-2xl p-8 text-center text-slate-400 font-mono text-xs italic">
+          <div className="bg-emerald-950/50 border border-dashed border-emerald-500/30 rounded-2xl p-8 text-center text-slate-350 font-mono text-xs italic">
             ⚠️ No se ha registrado ninguna Asesora oficial en este momento. El administrador puede registrar una marcando la opción "Asesora" en el formulario.
           </div>
         ) : (
@@ -67,7 +67,7 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                 key={asesora.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-neutral-950 via-neutral-900 to-emerald-950/40 border border-emerald-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.08)]"
+                className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 border border-emerald-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.12)]"
               >
                 {/* Neon grid pattern */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.01)_1px,transparent_1px)] bg-[size:12px_12px] pointer-events-none" />
@@ -96,10 +96,10 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                   <h4 className="font-display font-black text-white text-lg tracking-tight uppercase">
                     {asesora.nombreCompleto}
                   </h4>
-                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed font-mono bg-black/30 p-2 border border-emerald-500/10 rounded-lg">
+                  <p className="text-xs text-slate-200 max-w-xl leading-relaxed font-mono bg-emerald-950/60 p-2 border border-emerald-500/20 rounded-lg">
                     CARGO: <span className="text-emerald-400 font-bold">{asesora.cargo}</span>
                   </p>
-                  <p className="text-xs text-slate-350 max-w-xl leading-relaxed">
+                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
                     Coordinadora académica y mentora ambiental en Cajamarca. Supervisa la articulación institucional de la carrera ecológica, coordina las alianzas de reciclaje de alto rendimiento y lidera la gobernanza del fondo cooperativo educativo transparente.
                   </p>
                 </div>
@@ -131,7 +131,7 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
 
         {estudiantes.length === 0 ? (
           <div 
-            className="bg-neutral-950/80 border-2 border-dashed border-emerald-500/20 rounded-2xl p-10 text-center max-w-xl mx-auto space-y-4 shadow-[0_0_20px_rgba(16,185,129,0.02)] relative overflow-hidden"
+            className="bg-emerald-950/80 border-2 border-dashed border-emerald-500/30 rounded-2xl p-10 text-center max-w-xl mx-auto space-y-4 shadow-[0_0_20px_rgba(16,185,129,0.04)] relative overflow-hidden"
             id="empty-team-sci-fi"
           >
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.03),transparent_60%)]" />
@@ -163,7 +163,7 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 whileHover={{ y: -4, scale: 1.02 }}
-                className="bg-neutral-900 border border-emerald-500/25 hover:border-emerald-400/80 rounded-xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                className="bg-emerald-950 border border-emerald-500/30 hover:border-emerald-400/80 rounded-xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
               >
                 {/* Visual sci-fi scanner bar on hover */}
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-400/50 opacity-0 group-hover:opacity-100 transition-all duration-300 animate-pulse" />
@@ -179,20 +179,20 @@ export default function NuestroEquipoTab({ equipo, onEditarEquipo, rolActual }: 
                       alt={integrante.nombreCompleto}
                     />
                     {/* Active light indicator */}
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-neutral-900 rounded-full flex items-center justify-center z-20" title="Agente en línea">
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-emerald-950 rounded-full flex items-center justify-center z-20" title="Agente en línea">
                       <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                     </span>
                   </div>
 
                   {/* ID Profile */}
                   <div className="space-y-1 w-full">
-                    <span className="text-[8px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/20 px-1.5 py-0.5 rounded tracking-widest uppercase">
+                    <span className="text-[8px] font-mono text-emerald-400 font-bold bg-emerald-950 border border-emerald-500/20 px-1.5 py-0.5 rounded tracking-widest uppercase">
                       ID-{integrante.id.substring(0, 8).toUpperCase()}
                     </span>
                     <h5 className="font-display font-black text-white text-xs tracking-tight uppercase truncate max-w-full">
                       {integrante.nombreCompleto}
                     </h5>
-                    <p className="text-[9px] text-slate-300 font-mono font-medium mt-1 uppercase tracking-wider bg-neutral-950 border border-emerald-500/10 px-2 py-0.5 rounded-full inline-block">
+                    <p className="text-[9px] text-slate-200 font-mono font-medium mt-1 uppercase tracking-wider bg-emerald-900/60 border border-emerald-500/15 px-2 py-0.5 rounded-full inline-block">
                       {integrante.cargo}
                     </p>
                   </div>
