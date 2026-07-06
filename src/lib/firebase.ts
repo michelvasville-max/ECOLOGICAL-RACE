@@ -126,6 +126,53 @@ export async function subirImagenAFirebase(file: File, path: string): Promise<st
   }
 }
 
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid || null,
+      email: auth?.currentUser?.email || null,
+      emailVerified: auth?.currentUser?.emailVerified || null,
+      isAnonymous: auth?.currentUser?.isAnonymous || null,
+      tenantId: auth?.currentUser?.tenantId || null,
+      providerInfo: auth?.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
 // === FUNCIONES DE SINCRONIZACIÓN EN TIEMPO REAL (onSnapshot) ===
 
 export function escucharInstituciones(onUpdate: (data: Institucion[]) => void) {
@@ -188,6 +235,7 @@ export function escucharComentarios(onUpdate: (data: Comentario[]) => void) {
     },
     (error) => {
       console.warn("Firestore error in escucharComentarios (using fallback):", error);
+      handleFirestoreError(error, OperationType.GET, 'comentarios');
     }
   );
 }
@@ -242,15 +290,27 @@ export async function guardarRegistro(reg: RegistroSemanal) {
 }
 
 export async function guardarComentario(com: Comentario) {
-  await setDoc(doc(db, 'comentarios', com.id), com);
+  try {
+    await setDoc(doc(db, 'comentarios', com.id), com);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `comentarios/${com.id}`);
+  }
 }
 
 export async function actualizarComentario(id: string, updates: Partial<Comentario>) {
-  await updateDoc(doc(db, 'comentarios', id), updates);
+  try {
+    await updateDoc(doc(db, 'comentarios', id), updates);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `comentarios/${id}`);
+  }
 }
 
 export async function eliminarComentario(id: string) {
-  await deleteDoc(doc(db, 'comentarios', id));
+  try {
+    await deleteDoc(doc(db, 'comentarios', id));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `comentarios/${id}`);
+  }
 }
 
 export async function guardarMiembroEquipo(miembro: IntegranteEquipo) {

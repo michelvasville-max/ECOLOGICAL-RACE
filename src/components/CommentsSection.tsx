@@ -196,9 +196,13 @@ export default function CommentsSection({
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
-            <span className="text-[10px] text-emerald-700 font-semibold font-mono flex items-center gap-1">
+            <span className={`text-[10px] font-semibold font-mono flex items-center gap-1 ${
+              rolActual === 'ADMIN' ? 'text-emerald-700' : 'text-amber-700'
+            }`}>
               <Lock className="w-3.5 h-3.5 animate-pulse" />
-              Tu comentario se publicará al instante en tiempo real.
+              {rolActual === 'ADMIN' 
+                ? '⚡ Como administrador, tu comentario se publicará al instante en tiempo real.' 
+                : '🔒 Tu comentario se enviará a moderación y aparecerá una vez aprobado por el administrador.'}
             </span>
             <button
               type="submit"
