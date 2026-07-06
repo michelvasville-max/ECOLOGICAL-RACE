@@ -190,56 +190,19 @@ export default function App() {
     });
 
     const unsubAulas = escucharAulas((data) => {
-      const hasMock = data.some((aula) => aula.id.startsWith('aula-82063-') || aula.id.startsWith('aula-82064-'));
-      if (hasMock) {
-        console.log('Mock classrooms detected in database. Purging...');
-        vaciarColeccionesDePrueba();
-      } else {
-        if (data.length === 0) {
-          INITIAL_AULAS.forEach((aula) => guardarAula(aula));
-        } else {
-          setAulas(data);
-        }
-      }
+      setAulas(data);
     });
 
     const unsubRegs = escucharRegistros((data) => {
-      const hasMock = data.some((reg) => reg.id.startsWith('reg-s'));
-      if (hasMock) {
-        vaciarColeccionesDePrueba();
-      } else {
-        if (data.length === 0) {
-          INITIAL_REGISTROS.forEach((reg) => guardarRegistro(reg));
-        } else {
-          setRegistros(data);
-        }
-      }
+      setRegistros(data);
     });
 
     const unsubComs = escucharComentarios((data) => {
-      const hasMock = data.some((com) => com.id.startsWith('com-'));
-      if (hasMock) {
-        vaciarColeccionesDePrueba();
-      } else {
-        if (data.length === 0) {
-          INITIAL_COMENTARIOS.forEach((com) => guardarComentario(com));
-        } else {
-          setComentarios(data);
-        }
-      }
+      setComentarios(data);
     });
 
     const unsubEquipo = escucharEquipo((data) => {
-      const hasMock = data.some((miembro) => miembro.id.startsWith('eq-'));
-      if (hasMock) {
-        vaciarColeccionesDePrueba();
-      } else {
-        if (data.length === 0) {
-          INITIAL_EQUIPO.forEach((miembro) => guardarMiembroEquipo(miembro));
-        } else {
-          setEquipo(data);
-        }
-      }
+      setEquipo(data);
     });
 
     const fallbackMetadata: ProyectoMetadata = {
