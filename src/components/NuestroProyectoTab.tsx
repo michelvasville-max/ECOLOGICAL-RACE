@@ -151,17 +151,18 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
         <div className="flex items-center justify-center w-full h-full py-4 z-10">
           <div className="relative group shrink-0">
             <div className="w-64 h-64 md:w-76 md:h-76 bg-white rounded-3xl border-2 border-sky-400 p-5 flex flex-col items-center justify-center overflow-hidden shadow-[0_12px_35px_rgba(14,165,233,0.25),inset_0_0_15px_rgba(14,165,233,0.05)] transition-all duration-300 hover:scale-103">
-              {(editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg') ? (
+              {(editedData.logoUrl || metadata.logoUrl) ? (
                 <img
-                  src={editedData.logoUrl || metadata.logoUrl || '/ecological_race_logo.svg'}
+                  src={editedData.logoUrl || metadata.logoUrl}
                   alt="Logo del Proyecto"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-contain p-1"
                 />
               ) : (
                 <div className="text-center p-3">
-                  <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-1.5" />
-                  <span className="text-[10px] font-mono text-slate-500 block font-bold">SIN LOGO</span>
+                  <Leaf className="w-16 h-16 text-sky-500 mx-auto mb-2" />
+                  <span className="text-xs font-bold text-sky-850 block">SIN LOGO PERSONALIZADO</span>
+                  <span className="text-[10px] text-sky-700 block mt-1">Sube el logo de tu proyecto</span>
                 </div>
               )}
             </div>

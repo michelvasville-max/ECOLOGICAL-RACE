@@ -54,7 +54,7 @@ export default function CommentsSection({
       autor: autorName,
       texto: texto.trim(),
       fecha: new Date().toISOString(),
-      estado: 'aprobado', // Guardado como aprobado para que se vincule instantáneamente sin moderación obligatoria
+      estado: rolActual === 'ADMIN' ? 'aprobado' : 'pendiente', // Los comentarios de usuarios normales requieren aprobación de administrador
     };
 
     onAgregarComentario(nuevo);

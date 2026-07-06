@@ -146,7 +146,7 @@ export default function App() {
   const [comentarios, setComentarios] = useState<Comentario[]>(INITIAL_COMENTARIOS);
   const [equipo, setEquipo] = useState<IntegranteEquipo[]>(INITIAL_EQUIPO);
   const [proyectoMetadata, setProyectoMetadata] = useState<ProyectoMetadata>({
-    logoUrl: '/ecological_race_logo.svg',
+    logoUrl: '',
     mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
     vision: 'Ser reconocidos en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
     nombreProyecto: 'Ecological Race',
@@ -243,7 +243,7 @@ export default function App() {
     });
 
     const fallbackMetadata: ProyectoMetadata = {
-      logoUrl: '/ecological_race_logo.svg',
+      logoUrl: '',
       mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
       vision: 'Ser recognized en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
       nombreProyecto: 'Ecological Race',
@@ -259,15 +259,7 @@ export default function App() {
     };
 
     const unsubMeta = escucharProyectoMetadata((data) => {
-      if (!data.logoUrl) {
-        const updated = { ...data, logoUrl: '/ecological_race_logo.svg' };
-        setProyectoMetadata(updated);
-        guardarProyectoMetadata(updated).catch((err) => {
-          console.warn("Error setting default project logo in Firestore:", err);
-        });
-      } else {
-        setProyectoMetadata(data);
-      }
+      setProyectoMetadata(data);
     }, fallbackMetadata);
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -516,7 +508,13 @@ export default function App() {
       <header className="bg-white border-b border-slate-200 px-6 py-5 flex flex-col md:flex-row justify-between items-center shrink-0 gap-4" id="main-header">
         <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <NeonLogo src={proyectoMetadata.logoUrl} fallbackType="project" sizeClass="w-20 h-20" alt="Logo Ecological Race" />
+            {proyectoMetadata.logoUrl && proyectoMetadata.logoUrl !== '/ecological_race_logo.svg' ? (
+              <NeonLogo src={proyectoMetadata.logoUrl} fallbackType="project" sizeClass="w-20 h-20" alt="Logo Ecological Race" />
+            ) : (
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-emerald-100 flex items-center justify-center border border-emerald-300 shadow-inner shrink-0">
+                <Leaf className="w-8 h-8 md:w-10 md:h-10 text-emerald-600" />
+              </div>
+            )}
             <div>
               <h1 className="text-3xl md:text-4xl font-black leading-none text-emerald-900 uppercase tracking-tighter font-display">
                 ECOLOGICAL RACE
@@ -720,6 +718,69 @@ export default function App() {
 
       {/* 4. MAIN CONTENT AREA WITH MOTION TRANSITION */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 pb-16">
+        {/* GLOBAL ADMIN MODERATION ALERTS FOR COMMENTS */}
+        {rolActual === 'ADMIN' && comentarios.some((c) => c.estado === 'pendiente') && (
+          <div className="bg-amber-50 border-2 border-amber-500/50 rounded-2xl p-5 mb-6 shadow-md" id="global-moderation-alert">
+            <div className="flex items-center space-x-2 text-amber-950 font-display font-bold text-sm uppercase tracking-wide mb-3">
+              <ShieldAlert className="w-5 h-5 text-amber-600 animate-pulse" />
+              <span>⚠️ Panel Global de Moderación: Tienes {comentarios.filter((c) => c.estado === 'pendiente').length} comentario(s) pendiente(s) de aprobación</span>
+            </div>
+            <p className="text-xs text-amber-850 mb-4 leading-normal">
+              Como administrador, debes aprobar estos comentarios para que sean visibles públicamente en el sitio:
+            </p>
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+              {comentarios.filter((c) => c.estado === 'pendiente').map((com) => {
+                const refText = com.referenciaTipo === 'acta' ? `Semana ${com.referenciaId}` : `Sección ${com.referenciaId}`;
+                return (
+                  <div key={com.id} className="bg-white p-3.5 rounded-xl border border-amber-200 shadow-3xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center space-x-2 flex-wrap">
+                        <span className="font-bold text-slate-800 text-xs">{com.autor}</span>
+                        <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-mono font-bold">
+                          Ubicación: {refText}
+                        </span>
+                      </div>
+                      <p className="text-slate-600 italic mt-1 font-sans">"{com.texto}"</p>
+                      <span className="text-[9px] text-slate-400 block font-mono">
+                        Fecha: {new Date(com.fecha).toLocaleString('es-PE')}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await actualizarComentario(com.id, { estado: 'aprobado' });
+                          } catch (err) {
+                            console.error("Error al aprobar comentario:", err);
+                          }
+                        }}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm transition cursor-pointer"
+                      >
+                        Aprobar y Mostrar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await eliminarComentario(com.id);
+                          } catch (err) {
+                            console.error("Error al eliminar comentario:", err);
+                          }
+                        }}
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 font-bold text-xs px-3 py-1.5 rounded-lg transition cursor-pointer"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {activeTab === 'resumen' && (
             <motion.div
