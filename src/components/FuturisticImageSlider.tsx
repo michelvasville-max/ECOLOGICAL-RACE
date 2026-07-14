@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles, Layers, Zap, GlassWater } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Layers, Zap, GlassWater, ImageOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const SLIDE_IMAGES = [
   {
-    url: 'https://images.pexels.com/photos/802221/pexels-photo-802221.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    url: 'https://firebasestorage.googleapis.com/v0/b/ecological-race.firebasestorage.app/o/slider-1.webp?alt=media&token=9e23742d-1178-4eee-b564-ced3d136410a',
     title: 'EDUCACIÓN COOPERATIVA',
     desc: 'Sembrando conciencia y corresponsabilidad ecológica en las aulas de Cajamarca.'
   },
   {
-    url: 'https://images.pexels.com/photos/6591428/pexels-photo-6591428.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    url: 'https://firebasestorage.googleapis.com/v0/b/ecological-race.firebasestorage.app/o/slider-2.webp?alt=media&token=f0331189-ef5d-44d8-b7a9-d1893ec03f87',
     title: 'SEGREGACIÓN EFICIENTE',
     desc: 'Canalizando el reciclaje de plástico, aluminio y cartón con trazabilidad total.'
   },
   {
-    url: 'https://images.pexels.com/photos/31438304/pexels-photo-31438304.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    url: 'https://firebasestorage.googleapis.com/v0/b/ecological-race.firebasestorage.app/o/slider-3.avif?alt=media&token=8bc41a37-768e-4814-ba07-95c93a347147',
     title: 'TECNOLOGÍA DE SEGUIMIENTO',
     desc: 'Monitoreo de gases de efecto invernadero evitados y bonus de carbón en tiempo real.'
   },
   {
-    url: 'https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    url: 'https://firebasestorage.googleapis.com/v0/b/ecological-race.firebasestorage.app/o/slider-4.webp?alt=media&token=72e1a979-3e1c-47b7-b53c-49ee0f134053',
     title: 'DESARROLLO SOSTENIBLE',
     desc: 'Transformando residuos en recursos tangibles para equipar nuestras escuelas.'
   }
@@ -27,6 +27,7 @@ const SLIDE_IMAGES = [
 
 export default function FuturisticImageSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,6 +43,9 @@ export default function FuturisticImageSlider() {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % SLIDE_IMAGES.length);
   };
+
+  const currentUrl = SLIDE_IMAGES[currentIndex].url;
+  const isImageFailed = failedImages[currentUrl];
 
   return (
     <div className="space-y-4" id="slider-and-materials-block">
@@ -61,13 +65,23 @@ export default function FuturisticImageSlider() {
               transition={{ duration: 0.6, ease: 'easeInOut' }}
               className="absolute inset-0 w-full h-full"
             >
-              {/* The Image (Vivid, 100% brightness, original colors) */}
-              <img 
-                src={SLIDE_IMAGES[currentIndex].url} 
-                alt={SLIDE_IMAGES[currentIndex].title}
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
+              {/* The Image / Fallback Container */}
+              {isImageFailed ? (
+                <div className="w-full h-full bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-950 flex flex-col items-center justify-center text-emerald-400 p-6 select-none">
+                  <ImageOff className="w-12 h-12 text-emerald-400/30 mb-2 animate-pulse" />
+                  <span className="text-[10px] font-mono tracking-widest text-emerald-400/60 uppercase">Imagen no disponible</span>
+                </div>
+              ) : (
+                <img 
+                  src={currentUrl} 
+                  alt={SLIDE_IMAGES[currentIndex].title}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => {
+                    setFailedImages(prev => ({ ...prev, [currentUrl]: true }));
+                  }}
+                />
+              )}
 
               {/* High-contrast Elegant Overlay behind text only */}
               <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 max-w-xl select-none">
