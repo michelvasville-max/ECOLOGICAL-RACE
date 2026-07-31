@@ -736,7 +736,7 @@ export default function AlianzasTab({
           </div>
 
           {/* Right Illustrative Image Block */}
-          <div className="w-full lg:w-72 xl:w-80 shrink-0 relative group rounded-2xl overflow-hidden border border-emerald-500/40 bg-slate-950 min-h-[200px] sm:min-h-[220px] shadow-md flex items-center justify-center">
+          <div className="w-full lg:w-80 xl:w-96 aspect-[2/1] shrink-0 relative group rounded-2xl overflow-hidden border border-emerald-500/40 bg-slate-950 shadow-md flex items-center justify-center">
             <img
               src={imagenAliadosActual}
               alt="Alianzas y Auspiciadores"

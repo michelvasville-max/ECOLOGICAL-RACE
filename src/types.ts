@@ -100,4 +100,17 @@ export interface HitoCronograma {
   tipo: 'hito' | 'sorteo' | 'cierre' | 'lanzamiento';
 }
 
+export interface Actividad {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  imagenUrl: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: 'activa' | 'finalizada';
+  enlaceAccion: string;
+  textoBotonAccion: string;
+  createdAt?: string;
+}
+
 export type RolUsuario = 'ADMIN' | 'VISITANTE';

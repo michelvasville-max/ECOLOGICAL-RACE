@@ -14,13 +14,15 @@ import {
   IntegranteEquipo,
   RolUsuario,
   ReaccionFoto,
-  Aliado
+  Aliado,
+  Actividad
 } from './types';
 import LeaderboardCompare, { AulaStats } from './components/LeaderboardCompare';
 import ClassroomRow from './components/ClassroomRow';
 import InstitucionesTab from './components/InstitucionesTab';
 import NuestroEquipoTab from './components/NuestroEquipoTab';
 import AlianzasTab from './components/AlianzasTab';
+import ActividadesTab from './components/ActividadesTab';
 import ActasSemanalesTab from './components/ActasSemanalesTab';
 import AddLogModal from './components/AddLogModal';
 import AddAulaModal from './components/AddAulaModal';
@@ -40,6 +42,7 @@ import {
   escucharComentarios,
   escucharEquipo,
   escucharAliados,
+  escucharActividades,
   escucharProyectoMetadata,
   escucharReaccionesFotos,
   guardarInstitucion,
@@ -51,6 +54,8 @@ import {
   eliminarMiembroEquipo,
   guardarAliado,
   eliminarAliado,
+  guardarActividad,
+  eliminarActividad,
   guardarProyectoMetadata,
   guardarReaccionFoto,
   eliminarReaccionFoto,
@@ -85,7 +90,8 @@ import {
   HelpCircle,
   Heart,
   Plus,
-  Handshake
+  Handshake,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -156,6 +162,7 @@ export default function App() {
   const [comentarios, setComentarios] = useState<Comentario[]>(INITIAL_COMENTARIOS);
   const [equipo, setEquipo] = useState<IntegranteEquipo[]>(INITIAL_EQUIPO);
   const [aliados, setAliados] = useState<Aliado[]>([]);
+  const [actividades, setActividades] = useState<Actividad[]>([]);
   const [proyectoMetadata, setProyectoMetadata] = useState<ProyectoMetadata>({
     logoUrl: '',
     mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
@@ -176,7 +183,7 @@ export default function App() {
     ]
   });
 
-  const [activeTab, setActiveTab] = useState<'resumen' | 'ranking' | 'instituciones' | 'actas' | 'proyecto' | 'equipo' | 'alianzas'>('resumen');
+  const [activeTab, setActiveTab] = useState<'resumen' | 'ranking' | 'instituciones' | 'actas' | 'proyecto' | 'equipo' | 'alianzas' | 'actividades'>('resumen');
 
   // --- ADMIN MODAL STATE ---
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -226,6 +233,10 @@ export default function App() {
       setAliados(data);
     });
 
+    const unsubActividades = escucharActividades((data) => {
+      setActividades(data);
+    });
+
     const fallbackMetadata: ProyectoMetadata = {
       logoUrl: '',
       mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
@@ -266,6 +277,7 @@ export default function App() {
       unsubComs();
       unsubEquipo();
       unsubAliados();
+      unsubActividades();
       unsubMeta();
       unsubAuth();
       unsubReacciones();
@@ -714,6 +726,21 @@ export default function App() {
               <Handshake className="w-4 h-4 text-emerald-400" />
               <span>Alianzas</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('actividades')}
+              className={`py-1 flex items-center space-x-2 cursor-pointer transition-all duration-300 font-mono text-[10px] tracking-widest uppercase font-bold relative ${
+                activeTab === 'actividades'
+                  ? 'text-emerald-400 font-extrabold pb-1 shadow-[0_0_15px_rgba(16,185,129,0.1)] border-b-2 border-emerald-400 scale-105'
+                  : 'text-slate-400 hover:text-emerald-300 pb-1 border-b-2 border-transparent'
+              }`}
+            >
+              <Tag className="w-4 h-4 text-emerald-400" />
+              <span>Actividades</span>
+              {actividades.some((a) => a.estado === 'activa') && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute -top-0.5 -right-1" />
+              )}
+            </button>
           </div>
         </div>
       </nav>
@@ -793,6 +820,38 @@ export default function App() {
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
+              {/* Banner discreto para actividad activa */}
+              {actividades.some((a) => a.estado === 'activa') && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setActiveTab('actividades')}
+                  className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 border border-emerald-400/50 hover:border-emerald-300 rounded-2xl p-3.5 px-5 shadow-[0_0_20px_rgba(16,185,129,0.2)] text-white cursor-pointer flex items-center justify-between gap-4 transition-all hover:scale-[1.005] group/act-banner"
+                  id="active-activity-resumen-banner"
+                >
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <span className="text-xl shrink-0 animate-bounce">🎟️</span>
+                    <div className="min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <span className="bg-emerald-400 text-emerald-950 font-mono font-black text-[9px] px-2 py-0.5 rounded uppercase tracking-wider">
+                          ACTIVIDAD ACTIVA
+                        </span>
+                        <span className="text-xs font-black font-display text-white uppercase tracking-tight truncate">
+                          {actividades.find((a) => a.estado === 'activa')?.titulo}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 font-sans truncate hidden sm:block mt-0.5">
+                        {actividades.find((a) => a.estado === 'activa')?.descripcion}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1.5 text-xs font-mono font-bold text-emerald-300 group-hover/act-banner:text-white shrink-0 bg-emerald-900/80 px-3 py-1.5 rounded-xl border border-emerald-500/40">
+                    <span>Ver más</span>
+                    <span className="text-emerald-400 font-bold">→</span>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Carrusel de imágenes con estilo oscuro futurista */}
               <FuturisticImageSlider />
 
@@ -1189,6 +1248,26 @@ export default function App() {
                 onGuardarMetadata={async (newMeta) => {
                   setProyectoMetadata(newMeta);
                   await guardarProyectoMetadata(newMeta);
+                }}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'actividades' && (
+            <motion.div
+              key="actividades"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <ActividadesTab
+                actividades={actividades}
+                rolActual={rolActual}
+                onGuardarActividad={async (actividad) => {
+                  await guardarActividad(actividad);
+                }}
+                onEliminarActividad={async (id) => {
+                  await eliminarActividad(id);
                 }}
               />
             </motion.div>

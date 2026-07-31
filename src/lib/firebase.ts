@@ -19,7 +19,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
-import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto, Aliado } from '../types';
+import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto, Aliado, Actividad } from '../types';
 import { ProyectoMetadata } from '../components/NuestroProyectoTab';
 
 // Valores por defecto provistos por AI Studio (pueden ser sobreescritos por variables .env)
@@ -270,6 +270,22 @@ export function escucharAliados(onUpdate: (data: Aliado[]) => void) {
   );
 }
 
+export function escucharActividades(onUpdate: (data: Actividad[]) => void) {
+  return onSnapshot(collection(db, 'actividades'), 
+    (snapshot) => {
+      const list: Actividad[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Actividad);
+      });
+      list.sort((a, b) => new Date(b.createdAt || b.fechaInicio || 0).getTime() - new Date(a.createdAt || a.fechaInicio || 0).getTime());
+      onUpdate(list);
+    },
+    (error) => {
+      console.warn("Firestore error in escucharActividades (using fallback):", error);
+    }
+  );
+}
+
 export function escucharProyectoMetadata(onUpdate: (data: ProyectoMetadata) => void, fallback: ProyectoMetadata) {
   return onSnapshot(doc(db, 'proyecto_metadata', 'default'), 
     (docSnap) => {
@@ -342,6 +358,14 @@ export async function guardarAliado(aliado: Aliado) {
 
 export async function eliminarAliado(id: string) {
   await deleteDoc(doc(db, 'aliados', id));
+}
+
+export async function guardarActividad(actividad: Actividad) {
+  await setDoc(doc(db, 'actividades', actividad.id), actividad);
+}
+
+export async function eliminarActividad(id: string) {
+  await deleteDoc(doc(db, 'actividades', id));
 }
 
 export function escucharReaccionesFotos(onUpdate: (data: ReaccionFoto[]) => void) {

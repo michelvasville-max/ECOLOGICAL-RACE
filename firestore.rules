@@ -47,5 +47,23 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isValidId(metaId);
     }
+
+    // 8. Aliados Collection
+    match /aliados/{aliadoId} {
+      allow read: if true;
+      allow write: if isValidId(aliadoId);
+    }
+
+    // 9. Reacciones Fotos Collection
+    match /reacciones_fotos/{reaccionId} {
+      allow read: if true;
+      allow write: if isValidId(reaccionId);
+    }
+
+    // 10. Actividades Collection
+    match /actividades/{actividadId} {
+      allow read: if true;
+      allow write: if isValidId(actividadId);
+    }
   }
 }

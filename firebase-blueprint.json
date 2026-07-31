@@ -89,6 +89,23 @@
         "duracion": { "type": "string" }
       },
       "required": ["mision", "vision", "nombreProyecto", "categoria", "institucionBase", "asesoraOficial", "duracion"]
+    },
+    "Actividad": {
+      "title": "Actividad",
+      "description": "Eco activity, raffle, or community event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "titulo": { "type": "string" },
+        "descripcion": { "type": "string" },
+        "imagenUrl": { "type": "string" },
+        "fechaInicio": { "type": "string" },
+        "fechaFin": { "type": "string" },
+        "estado": { "type": "string", "enum": ["activa", "finalizada"] },
+        "enlaceAccion": { "type": "string" },
+        "textoBotonAccion": { "type": "string" }
+      },
+      "required": ["id", "titulo", "descripcion", "estado"]
     }
   },
   "firestore": {
@@ -115,6 +132,10 @@
     "/proyecto_metadata/{metaId}": {
       "schema": "ProyectoMetadata",
       "description": "Singleton configuration document for project overview"
+    },
+    "/actividades/{actividadId}": {
+      "schema": "Actividad",
+      "description": "Collection of project activities, raffles, and events"
     }
   }
 }
