@@ -14,11 +14,13 @@ import {
   IntegranteEquipo,
   RolUsuario,
   ReaccionFoto,
+  Aliado
 } from './types';
 import LeaderboardCompare, { AulaStats } from './components/LeaderboardCompare';
 import ClassroomRow from './components/ClassroomRow';
 import InstitucionesTab from './components/InstitucionesTab';
 import NuestroEquipoTab from './components/NuestroEquipoTab';
+import AlianzasTab from './components/AlianzasTab';
 import ActasSemanalesTab from './components/ActasSemanalesTab';
 import AddLogModal from './components/AddLogModal';
 import AddAulaModal from './components/AddAulaModal';
@@ -37,6 +39,7 @@ import {
   escucharRegistros,
   escucharComentarios,
   escucharEquipo,
+  escucharAliados,
   escucharProyectoMetadata,
   escucharReaccionesFotos,
   guardarInstitucion,
@@ -46,6 +49,8 @@ import {
   guardarComentario,
   guardarMiembroEquipo,
   eliminarMiembroEquipo,
+  guardarAliado,
+  eliminarAliado,
   guardarProyectoMetadata,
   guardarReaccionFoto,
   eliminarReaccionFoto,
@@ -79,7 +84,8 @@ import {
   AlertCircle,
   HelpCircle,
   Heart,
-  Plus
+  Plus,
+  Handshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -149,6 +155,7 @@ export default function App() {
   const [registros, setRegistros] = useState<RegistroSemanal[]>(INITIAL_REGISTROS);
   const [comentarios, setComentarios] = useState<Comentario[]>(INITIAL_COMENTARIOS);
   const [equipo, setEquipo] = useState<IntegranteEquipo[]>(INITIAL_EQUIPO);
+  const [aliados, setAliados] = useState<Aliado[]>([]);
   const [proyectoMetadata, setProyectoMetadata] = useState<ProyectoMetadata>({
     logoUrl: '',
     mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
@@ -169,7 +176,7 @@ export default function App() {
     ]
   });
 
-  const [activeTab, setActiveTab] = useState<'resumen' | 'ranking' | 'instituciones' | 'actas' | 'proyecto' | 'equipo'>('resumen');
+  const [activeTab, setActiveTab] = useState<'resumen' | 'ranking' | 'instituciones' | 'actas' | 'proyecto' | 'equipo' | 'alianzas'>('resumen');
 
   // --- ADMIN MODAL STATE ---
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -215,6 +222,10 @@ export default function App() {
       setEquipo(data);
     });
 
+    const unsubAliados = escucharAliados((data) => {
+      setAliados(data);
+    });
+
     const fallbackMetadata: ProyectoMetadata = {
       logoUrl: '',
       mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
@@ -253,6 +264,7 @@ export default function App() {
       unsubRegs();
       unsubComs();
       unsubEquipo();
+      unsubAliados();
       unsubMeta();
       unsubAuth();
       unsubReacciones();
@@ -688,6 +700,18 @@ export default function App() {
             >
               <Users className="w-4 h-4 text-emerald-400" />
               <span>Equipo</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('alianzas')}
+              className={`py-1 flex items-center space-x-2 cursor-pointer transition-all duration-300 font-mono text-[10px] tracking-widest uppercase font-bold relative ${
+                activeTab === 'alianzas'
+                  ? 'text-emerald-400 font-extrabold pb-1 shadow-[0_0_15px_rgba(16,185,129,0.1)] border-b-2 border-emerald-400 scale-105'
+                  : 'text-slate-400 hover:text-emerald-300 pb-1 border-b-2 border-transparent'
+              }`}
+            >
+              <Handshake className="w-4 h-4 text-emerald-400" />
+              <span>Alianzas</span>
             </button>
           </div>
         </div>
@@ -1137,6 +1161,33 @@ export default function App() {
                 }}
                 onEliminarEquipo={async (id) => {
                   await eliminarMiembroEquipo(id);
+                }}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'alianzas' && (
+            <motion.div
+              key="alianzas"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <AlianzasTab
+                aliados={aliados}
+                metadata={proyectoMetadata}
+                rolActual={rolActual}
+                usuarioGoogle={usuarioGoogle}
+                iniciarSesionConGoogle={iniciarSesionConGoogle}
+                onGuardarAliado={async (aliado) => {
+                  await guardarAliado(aliado);
+                }}
+                onEliminarAliado={async (id) => {
+                  await eliminarAliado(id);
+                }}
+                onGuardarMetadata={async (newMeta) => {
+                  setProyectoMetadata(newMeta);
+                  await guardarProyectoMetadata(newMeta);
                 }}
               />
             </motion.div>

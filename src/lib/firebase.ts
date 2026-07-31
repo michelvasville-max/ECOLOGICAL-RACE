@@ -19,7 +19,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
-import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto } from '../types';
+import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto, Aliado } from '../types';
 import { ProyectoMetadata } from '../components/NuestroProyectoTab';
 
 // Valores por defecto provistos por AI Studio (pueden ser sobreescritos por variables .env)
@@ -255,6 +255,21 @@ export function escucharEquipo(onUpdate: (data: IntegranteEquipo[]) => void) {
   );
 }
 
+export function escucharAliados(onUpdate: (data: Aliado[]) => void) {
+  return onSnapshot(collection(db, 'aliados'), 
+    (snapshot) => {
+      const list: Aliado[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Aliado);
+      });
+      onUpdate(list);
+    },
+    (error) => {
+      console.warn("Firestore error in escucharAliados (using fallback):", error);
+    }
+  );
+}
+
 export function escucharProyectoMetadata(onUpdate: (data: ProyectoMetadata) => void, fallback: ProyectoMetadata) {
   return onSnapshot(doc(db, 'proyecto_metadata', 'default'), 
     (docSnap) => {
@@ -319,6 +334,14 @@ export async function guardarMiembroEquipo(miembro: IntegranteEquipo) {
 
 export async function eliminarMiembroEquipo(id: string) {
   await deleteDoc(doc(db, 'equipo', id));
+}
+
+export async function guardarAliado(aliado: Aliado) {
+  await setDoc(doc(db, 'aliados', aliado.id), aliado);
+}
+
+export async function eliminarAliado(id: string) {
+  await deleteDoc(doc(db, 'aliados', id));
 }
 
 export function escucharReaccionesFotos(onUpdate: (data: ReaccionFoto[]) => void) {
@@ -423,7 +446,8 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
     materialesBonus: metadata.materialesBonus || [],
     retosEcoeficiencia: metadata.retosEcoeficiencia || [],
     donacionesQrUrl: metadata.donacionesQrUrl || '',
-    donacionesTitular: metadata.donacionesTitular || 'Neida Villegas'
+    donacionesTitular: metadata.donacionesTitular || 'Neida Villegas',
+    aliadosIntroTexto: metadata.aliadosIntroTexto || ''
   });
 }
 

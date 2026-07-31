@@ -66,6 +66,25 @@ export interface IntegranteEquipo {
   esAsesora?: boolean;
 }
 
+export interface RedSocialAliado {
+  id: string;
+  nombre: string;
+  icono: string;
+  usuario: string;
+  url: string;
+}
+
+export interface Aliado {
+  id: string;
+  logoUrl: string;
+  nombre: string;
+  descripcion: string;
+  videoUrl: string;
+  redesSociales: RedSocialAliado[];
+  likes: number;
+  likesUsers: string[];
+}
+
 export interface HitoCronograma {
   semana: number;
   titulo: string;

@@ -75,6 +75,7 @@ export interface ProyectoMetadata {
   retosEcoeficiencia?: RetoEcoeficiencia[];
   donacionesQrUrl?: string;
   donacionesTitular?: string;
+  aliadosIntroTexto?: string;
 }
 
 export function obtenerMaterialesBonus(metadata?: ProyectoMetadata | null): MaterialBonus[] {
