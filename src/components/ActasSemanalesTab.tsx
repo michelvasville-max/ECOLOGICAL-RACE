@@ -751,7 +751,7 @@ export default function ActasSemanalesTab({
                   <option value="unassigned">Evidencias de ejecución</option>
                   {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                     <option key={s} value={String(s)}>
-                      Reporte N.° {s}
+                      REP {s}
                     </option>
                   ))}
                 </select>
@@ -835,7 +835,7 @@ export default function ActasSemanalesTab({
                         <option value={0}>Sin asignar</option>
                         {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                           <option key={s} value={s}>
-                            Reporte N.° {s}
+                            REP {s}
                           </option>
                         ))}
                       </select>
@@ -1028,7 +1028,7 @@ export default function ActasSemanalesTab({
                               <option value={0}>Sin asignar</option>
                               {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                                 <option key={s} value={s}>
-                                  Reporte N.° {s}
+                                  REP {s}
                                 </option>
                               ))}
                             </select>
