@@ -23,6 +23,7 @@ import ActasSemanalesTab from './components/ActasSemanalesTab';
 import AddLogModal from './components/AddLogModal';
 import AddAulaModal from './components/AddAulaModal';
 import AddMiembroModal from './components/AddMiembroModal';
+import AyudaSoporteModal from './components/AyudaSoporteModal';
 import NuestroProyectoTab, { ProyectoMetadata, obtenerRedesSociales, renderSocialIcon } from './components/NuestroProyectoTab';
 import FuturisticImageSlider from './components/FuturisticImageSlider';
 import NeonLogo from './components/NeonLogo';
@@ -172,6 +173,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddAulaModalOpen, setIsAddAulaModalOpen] = useState(false);
   const [isAddMiembroModalOpen, setIsAddMiembroModalOpen] = useState(false);
+  const [isAyudaModalOpen, setIsAyudaModalOpen] = useState(false);
   const [registroParaEditar, setRegistroParaEditar] = useState<RegistroSemanal | null>(null);
 
   // --- FILTER STATE ---
@@ -1125,6 +1127,18 @@ export default function App() {
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               Cooperativa Ecológica Escolar de responsabilidad social escolar. Organizado con orgullo por delegados de responsabilidad ambiental del COAR Cajamarca.
             </p>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setIsAyudaModalOpen(true)}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-950/90 to-cyan-950/90 hover:from-blue-900 hover:to-cyan-900 text-cyan-300 hover:text-white border border-cyan-400/60 hover:border-cyan-300 px-3.5 py-1.5 rounded-full font-mono text-xs font-bold transition duration-300 shadow-[0_0_15px_rgba(6,182,212,0.35)] hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] cursor-pointer group"
+              >
+                <div className="w-5 h-5 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 flex items-center justify-center text-cyan-300 border border-cyan-400/40 transition">
+                  <HelpCircle className="w-3.5 h-3.5" />
+                </div>
+                <span>Ayuda / Soporte</span>
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3 text-xs">
@@ -1205,6 +1219,16 @@ export default function App() {
             isOpen={isAddMiembroModalOpen}
             onClose={() => setIsAddMiembroModalOpen(false)}
             onGuardarMiembro={handleGuardarMiembro}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 9. AYUDA / SOPORTE DIALOG */}
+      <AnimatePresence>
+        {isAyudaModalOpen && (
+          <AyudaSoporteModal
+            isOpen={isAyudaModalOpen}
+            onClose={() => setIsAyudaModalOpen(false)}
           />
         )}
       </AnimatePresence>

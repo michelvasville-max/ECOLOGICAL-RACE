@@ -819,19 +819,6 @@ export default function ActasSemanalesTab({
                               <span>👍</span>
                               <span>{likesCount}</span>
                             </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleReaccionarFoto(item.id, 'dislike')}
-                              className={`flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border transition duration-150 cursor-pointer select-none ${
-                                yaLeDioDislike
-                                  ? 'bg-red-600 text-white border-red-600 font-bold shadow-2xs'
-                                  : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200'
-                              }`}
-                            >
-                              <span>👎</span>
-                              <span>{dislikesCount}</span>
-                            </button>
                           </div>
 
                           {rolActual === 'ADMIN' && (

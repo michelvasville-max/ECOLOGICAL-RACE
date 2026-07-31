@@ -226,7 +226,6 @@ export default function CommentsSection({
               if (com.estado !== 'aprobado') return null;
 
               const yaLeDioLike = usuarioGoogle && com.likesUsers?.includes(usuarioGoogle.uid);
-              const yaLeDioDislike = usuarioGoogle && com.dislikesUsers?.includes(usuarioGoogle.uid);
 
               return (
                 <motion.div
@@ -272,26 +271,6 @@ export default function CommentsSection({
                     >
                       <span>👍</span>
                       <span>{com.likes || 0}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!usuarioGoogle) {
-                          alert("Inicia sesión con Google para dar No me gusta.");
-                          iniciarSesionConGoogle?.();
-                        } else {
-                          onReaccionarComentario?.(com.id, 'dislike');
-                        }
-                      }}
-                      className={`flex items-center space-x-1 text-[11px] font-mono px-2 py-1 rounded-lg border transition cursor-pointer select-none ${
-                        yaLeDioDislike
-                          ? 'bg-red-500 text-white border-red-500 font-bold'
-                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'
-                      }`}
-                    >
-                      <span>👎</span>
-                      <span>{com.dislikes || 0}</span>
                     </button>
                   </div>
                 </motion.div>
