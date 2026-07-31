@@ -305,10 +305,10 @@ export default function ActasSemanalesTab({
   // Deterministic heights to enforce varied mosaic/collage layout
   const getCollageClasses = (index: number) => {
     const classes = [
-      'col-span-1 h-[280px]',
-      'col-span-1 h-[320px]',
-      'col-span-1 h-[260px]',
-      'col-span-1 h-[340px]',
+      'col-span-1 h-[330px]',
+      'col-span-1 h-[370px]',
+      'col-span-1 h-[310px]',
+      'col-span-1 h-[390px]',
     ];
     return classes[index % classes.length];
   };
@@ -809,7 +809,7 @@ export default function ActasSemanalesTab({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
                         Fecha de la Evidencia:
@@ -839,19 +839,6 @@ export default function ActasSemanalesTab({
                           </option>
                         ))}
                       </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
-                        Etiqueta / Badge (Opcional):
-                      </label>
-                      <input
-                        type="text"
-                        value={etiquetaFoto}
-                        onChange={(e) => setEtiquetaFoto(e.target.value)}
-                        placeholder="Ej. REP. 3 o Conferencia"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                      />
                     </div>
 
                     <div className="space-y-1">
@@ -1001,8 +988,8 @@ export default function ActasSemanalesTab({
                           </div>
                         </div>
 
-                        {/* Fecha, Semana, Etiqueta, and Titulo inputs */}
-                        <div className="grid grid-cols-2 gap-2">
+                        {/* Fecha, Semana, and Titulo inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <div className="space-y-1">
                             <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
                               Fecha de Evidencia:
@@ -1032,19 +1019,6 @@ export default function ActasSemanalesTab({
                                 </option>
                               ))}
                             </select>
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
-                              Etiqueta (Opcional):
-                            </label>
-                            <input
-                              type="text"
-                              value={etiquetaEditando}
-                              onChange={(e) => setEtiquetaEditando(e.target.value)}
-                              placeholder="Ej. REP. 3 o Conferencia"
-                              className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                            />
                           </div>
 
                           <div className="space-y-1">
@@ -1155,13 +1129,6 @@ export default function ActasSemanalesTab({
                           {item.semana && item.semana > 0 && (
                             <span className="text-[8px] font-mono text-blue-800 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
                               REP {item.semana}
-                            </span>
-                          )}
-                          {item.etiqueta && item.etiqueta.trim() !== '' &&
-                           !item.etiqueta.trim().toUpperCase().startsWith('EVID') &&
-                           !item.etiqueta.trim().toUpperCase().startsWith('REP') && (
-                            <span className="text-[8px] font-mono text-stone-700 bg-stone-100 border border-stone-300 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
-                              {item.etiqueta.trim()}
                             </span>
                           )}
                         </div>
