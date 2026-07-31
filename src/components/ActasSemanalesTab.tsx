@@ -1002,7 +1002,7 @@ export default function ActasSemanalesTab({
                         </div>
 
                         {/* Fecha, Semana, Etiqueta, and Titulo inputs */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
                             <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
                               Fecha de Evidencia:
