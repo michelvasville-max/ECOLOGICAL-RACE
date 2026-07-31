@@ -16,9 +16,13 @@ import {
   MessageSquare,
   Sparkles,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  Image,
+  Play
 } from 'lucide-react';
-import { Aliado, RedSocialAliado, RolUsuario } from '../types';
+import { Aliado, RedSocialAliado, RolUsuario, EvidenciaMedia } from '../types';
 import { ProyectoMetadata, renderSocialIcon } from './NuestroProyectoTab';
 import { subirImagenAFirebase } from '../lib/firebase';
 
@@ -31,6 +35,14 @@ interface Props {
   onGuardarAliado: (aliado: Aliado) => Promise<void>;
   onEliminarAliado: (id: string) => Promise<void>;
   onGuardarMetadata: (metadata: ProyectoMetadata) => Promise<void>;
+}
+
+interface DraftEvidencia {
+  id: string;
+  tipo: 'youtube' | 'imagen' | 'video_archivo';
+  url: string;
+  file?: File | null;
+  descripcion: string;
 }
 
 function getEmbedVideoUrl(url: string): string | null {
@@ -70,6 +82,148 @@ function getEmbedVideoUrl(url: string): string | null {
   return cleanUrl;
 }
 
+interface MediaSliderProps {
+  evidencias: EvidenciaMedia[];
+  nombreAliado: string;
+}
+
+function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (!evidencias || evidencias.length === 0) {
+    return (
+      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 text-center space-y-2">
+        <Video className="w-8 h-8 text-stone-300 mx-auto" />
+        <p className="text-xs font-mono font-semibold text-stone-400">
+          Aún no hay evidencias multimedia
+        </p>
+      </div>
+    );
+  }
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + evidencias.length) % evidencias.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % evidencias.length);
+  };
+
+  const activeIndex = currentIndex >= evidencias.length ? 0 : currentIndex;
+  const activeItem = evidencias[activeIndex];
+  const embedUrl = activeItem?.tipo === 'youtube' ? getEmbedVideoUrl(activeItem.url) : null;
+
+  return (
+    <div className="space-y-2">
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border-2 border-emerald-500/30 shadow-md group/slider">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
+          >
+            {activeItem.tipo === 'youtube' && (
+              embedUrl ? (
+                <iframe
+                  src={embedUrl}
+                  title={`Evidencia ${activeIndex + 1} de ${nombreAliado}`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="text-stone-400 font-mono text-xs text-center p-4">
+                  Enlace de YouTube no disponible
+                </div>
+              )
+            )}
+
+            {activeItem.tipo === 'imagen' && (
+              <img
+                src={activeItem.url}
+                alt={activeItem.descripcion || `Evidencia ${activeIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
+            )}
+
+            {activeItem.tipo === 'video_archivo' && (
+              <video
+                src={activeItem.url}
+                controls
+                className="w-full h-full object-contain bg-black"
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation Arrows if > 1 items */}
+        {evidencias.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              type="button"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border border-emerald-400/40"
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleNext}
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border border-emerald-400/40"
+              aria-label="Siguiente"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Dots indicator */}
+            <div className="absolute top-3 right-3 z-30 flex items-center space-x-1 bg-slate-950/70 px-2 py-1 rounded-full border border-emerald-500/30 backdrop-blur-xs">
+              {evidencias.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-200 cursor-pointer ${
+                    idx === activeIndex
+                      ? 'bg-emerald-400 w-4'
+                      : 'bg-slate-500 w-2 hover:bg-slate-300'
+                  }`}
+                  aria-label={`Ir a evidencia ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Type Badge */}
+        <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
+          <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-slate-950/80 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-md flex items-center gap-1 backdrop-blur-xs">
+            {activeItem.tipo === 'youtube' && <Video className="w-3 h-3 text-red-400" />}
+            {activeItem.tipo === 'imagen' && <Image className="w-3 h-3 text-cyan-400" />}
+            {activeItem.tipo === 'video_archivo' && <Play className="w-3 h-3 text-emerald-400" />}
+            {activeItem.tipo === 'youtube' ? 'YouTube' : activeItem.tipo === 'imagen' ? 'Imagen' : 'Video'}
+            {' '}({activeIndex + 1}/{evidencias.length})
+          </span>
+        </div>
+      </div>
+
+      {/* Description below carousel */}
+      {activeItem.descripcion && (
+        <div className="bg-stone-50 border border-stone-200/80 rounded-xl px-3 py-2 text-stone-700 font-sans text-xs flex items-start gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+          <p className="font-medium text-[11px] leading-snug">
+            {activeItem.descripcion}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const RED_SOCIAL_OPCIONES = [
   { id: 'facebook', nombre: 'Facebook' },
   { id: 'instagram', nombre: 'Instagram' },
@@ -101,17 +255,41 @@ export default function AlianzasTab({
   const [logoUrl, setLogoUrl] = useState('');
   const [archivoLogo, setArchivoLogo] = useState<File | null>(null);
   const [redes, setRedes] = useState<RedSocialAliado[]>([]);
+  const [evidenciasDraft, setEvidenciasDraft] = useState<DraftEvidencia[]>([]);
   const [guardando, setGuardando] = useState(false);
 
   // Intro message edit state (Admin)
   const [modalIntroOpen, setModalIntroOpen] = useState(false);
   const [introTexto, setIntroTexto] = useState('');
   const [guardandoIntro, setGuardandoIntro] = useState(false);
+  const [subiendoAliadosImagen, setSubiendoAliadosImagen] = useState(false);
+
+  const handleAliadosImagenChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSubiendoAliadosImagen(true);
+      try {
+        const url = await subirImagenAFirebase(file, 'proyecto');
+        await onGuardarMetadata({
+          ...metadata,
+          aliadosImagenUrl: url
+        });
+      } catch (err) {
+        console.error('Error al subir la imagen de alianzas:', err);
+        alert('Ocurrió un error al subir la imagen.');
+      } finally {
+        setSubiendoAliadosImagen(false);
+      }
+    }
+  };
 
   const introDefecto =
     "Gracias a las empresas, organizaciones y personas aliadas que forman parte de este proyecto. Su compromiso constante fortalece nuestra misión de reciclaje escolar y ecoeficiencia en la comunidad.";
 
   const textoIntroActual = metadata.aliadosIntroTexto || introDefecto;
+  const imagenAliadosActual =
+    metadata.aliadosImagenUrl ||
+    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800';
 
   const abrirModalNuevo = () => {
     setAliadoEditando(null);
@@ -121,6 +299,7 @@ export default function AlianzasTab({
     setLogoUrl('');
     setArchivoLogo(null);
     setRedes([]);
+    setEvidenciasDraft([]);
     setModalAliadoOpen(true);
   };
 
@@ -132,7 +311,61 @@ export default function AlianzasTab({
     setLogoUrl(aliado.logoUrl || '');
     setArchivoLogo(null);
     setRedes(aliado.redesSociales ? [...aliado.redesSociales] : []);
+
+    if (aliado.evidenciasMedia && aliado.evidenciasMedia.length > 0) {
+      setEvidenciasDraft(
+        aliado.evidenciasMedia.map((e) => ({
+          id: e.id || `ev-${Date.now()}-${Math.random()}`,
+          tipo: e.tipo || 'youtube',
+          url: e.url || '',
+          file: null,
+          descripcion: e.descripcion || ''
+        }))
+      );
+    } else if (aliado.videoUrl) {
+      setEvidenciasDraft([
+        {
+          id: `ev-legacy-${Date.now()}`,
+          tipo: 'youtube',
+          url: aliado.videoUrl,
+          file: null,
+          descripcion: 'Video de presentación'
+        }
+      ]);
+    } else {
+      setEvidenciasDraft([]);
+    }
+
     setModalAliadoOpen(true);
+  };
+
+  const handleAgregarEvidencia = (tipo: 'youtube' | 'imagen' | 'video_archivo' = 'youtube') => {
+    const nueva: DraftEvidencia = {
+      id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      tipo,
+      url: '',
+      file: null,
+      descripcion: ''
+    };
+    setEvidenciasDraft((prev) => [...prev, nueva]);
+  };
+
+  const handleActualizarEvidencia = (id: string, campo: keyof DraftEvidencia, valor: any) => {
+    setEvidenciasDraft((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          if (campo === 'tipo') {
+            return { ...item, tipo: valor, url: '', file: null };
+          }
+          return { ...item, [campo]: valor };
+        }
+        return item;
+      })
+    );
+  };
+
+  const handleEliminarEvidencia = (id: string) => {
+    setEvidenciasDraft((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleAgregarRed = () => {
@@ -179,12 +412,33 @@ export default function AlianzasTab({
         urlFinalLogo = await subirImagenAFirebase(archivoLogo, 'aliados');
       }
 
+      // Subir archivos de evidencias multimedia si existen
+      const evidenciasProcesadas: EvidenciaMedia[] = [];
+      for (const draft of evidenciasDraft) {
+        let finalUrl = draft.url;
+        if ((draft.tipo === 'imagen' || draft.tipo === 'video_archivo') && draft.file) {
+          finalUrl = await subirImagenAFirebase(draft.file, 'aliados_evidencias');
+        }
+
+        if (finalUrl.trim()) {
+          evidenciasProcesadas.push({
+            id: draft.id || `ev-${Date.now()}`,
+            tipo: draft.tipo,
+            url: finalUrl.trim(),
+            descripcion: draft.descripcion.trim()
+          });
+        }
+      }
+
       const id = aliadoEditando ? aliadoEditando.id : `aliado-${Date.now()}`;
+      const primerYoutube = evidenciasProcesadas.find((e) => e.tipo === 'youtube');
+
       const aliadoFinal: Aliado = {
         id,
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        videoUrl: videoUrl.trim(),
+        videoUrl: primerYoutube ? primerYoutube.url : (videoUrl.trim() || ''),
+        evidenciasMedia: evidenciasProcesadas,
         logoUrl: urlFinalLogo,
         redesSociales: redes,
         likes: aliadoEditando ? aliadoEditando.likes || 0 : 0,
@@ -270,34 +524,35 @@ export default function AlianzasTab({
       <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_30px_rgba(16,185,129,0.2)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-mono font-black text-emerald-400 bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
-                <Handshake className="w-3.5 h-3.5" />
-                Alianzas Estratégicas
-              </span>
-              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">
-                {aliados.length} {aliados.length === 1 ? 'Aliado Oficial' : 'Aliados Oficiales'}
-              </span>
+        <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-6">
+          {/* Left Text Block */}
+          <div className="space-y-4 flex-1 min-w-0 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                <span className="text-[10px] font-mono font-black text-emerald-400 bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
+                  <Handshake className="w-3.5 h-3.5" />
+                  Alianzas Estratégicas
+                </span>
+                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">
+                  {aliados.length} {aliados.length === 1 ? 'Aliado Oficial' : 'Aliados Oficiales'}
+                </span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-black text-white font-display uppercase tracking-tight">
+                NUESTROS ALIADOS Y AUSPICIADORES
+              </h2>
+
+              <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-sans font-normal border-l-2 border-emerald-400/80 pl-4 py-1">
+                {textoIntroActual}
+              </p>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-black text-white font-display uppercase tracking-tight">
-              NUESTROS ALIADOS Y AUSPICIADORES
-            </h2>
-
-            <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-sans font-normal border-l-2 border-emerald-400/80 pl-4 py-1">
-              {textoIntroActual}
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0 relative z-10">
             {rolActual === 'ADMIN' && (
-              <>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={abrirModalNuevo}
-                  className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider px-5 py-3 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition hover:scale-105 cursor-pointer"
+                  className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition hover:scale-105 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Agregar Aliado</span>
@@ -309,12 +564,42 @@ export default function AlianzasTab({
                     setIntroTexto(textoIntroActual);
                     setModalIntroOpen(true);
                   }}
-                  className="inline-flex items-center justify-center space-x-1.5 bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs uppercase tracking-wide px-4 py-2.5 rounded-2xl transition cursor-pointer"
+                  className="inline-flex items-center justify-center space-x-1.5 bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs uppercase tracking-wide px-4 py-2 rounded-2xl transition cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   <span>Editar Mensaje</span>
                 </button>
-              </>
+              </div>
+            )}
+          </div>
+
+          {/* Right Illustrative Image Block */}
+          <div className="w-full lg:w-72 xl:w-80 shrink-0 relative group rounded-2xl overflow-hidden border border-emerald-500/40 bg-slate-950 min-h-[200px] sm:min-h-[220px] shadow-md flex items-center justify-center">
+            <img
+              src={imagenAliadosActual}
+              alt="Alianzas y Auspiciadores"
+              className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+            />
+
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-3 left-3 text-emerald-300 text-[10px] font-mono bg-slate-950/80 border border-emerald-500/30 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+              Ilustración Alianzas
+            </div>
+
+            {rolActual === 'ADMIN' && (
+              <label className="absolute inset-0 bg-slate-950/85 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-20">
+                <Upload className="w-6 h-6 text-emerald-400" />
+                <span className="text-xs font-mono font-bold tracking-wider text-emerald-300 text-center">
+                  {subiendoAliadosImagen ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAliadosImagenChange}
+                  className="hidden"
+                />
+              </label>
             )}
           </div>
         </div>
@@ -348,23 +633,30 @@ export default function AlianzasTab({
       ) : (
         <div className="space-y-8">
           {aliados.map((aliado) => {
-            const embedUrl = getEmbedVideoUrl(aliado.videoUrl);
             const yaLeDioLike = usuarioGoogle && aliado.likesUsers?.includes(usuarioGoogle.uid);
+
+            const evidenciasList: EvidenciaMedia[] =
+              aliado.evidenciasMedia && aliado.evidenciasMedia.length > 0
+                ? aliado.evidenciasMedia
+                : aliado.videoUrl
+                ? [{ id: 'legacy-video', tipo: 'youtube', url: aliado.videoUrl, descripcion: 'Video de presentación' }]
+                : [];
 
             return (
               <motion.div
                 key={aliado.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -5, scale: 1.015 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-md hover:shadow-lg transition-all duration-300 space-y-6 relative overflow-hidden"
+                className="bg-gradient-to-br from-emerald-100/90 via-teal-50/60 to-white border border-emerald-200/90 hover:border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-md hover:shadow-[0_12px_30px_rgba(16,185,129,0.22)] transition-all duration-300 space-y-6 relative overflow-hidden"
               >
                 {/* Header of Ally Card */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-200/60 pb-5">
                   <div className="flex items-center space-x-4">
-                    {/* Logo */}
+                    {/* Logo: Notablemente más grande (w-28 h-28 sm:w-36 sm:h-36) */}
                     {aliado.logoUrl ? (
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border border-stone-200 bg-stone-50 p-2 flex items-center justify-center shrink-0 shadow-xs">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-2 border-stone-200 bg-stone-50 p-2 flex items-center justify-center shrink-0 shadow-sm">
                         <img
                           src={aliado.logoUrl}
                           alt={aliado.nombre}
@@ -372,7 +664,7 @@ export default function AlianzasTab({
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-emerald-900 text-emerald-300 border border-emerald-700 flex items-center justify-center shrink-0 font-mono font-black text-xl shadow-xs">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-emerald-900 text-emerald-300 border-2 border-emerald-700 flex items-center justify-center shrink-0 font-mono font-black text-2xl sm:text-3xl shadow-sm">
                         {aliado.nombre.substring(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -418,7 +710,7 @@ export default function AlianzasTab({
                 {/* Body Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* Left Column: Description & Social Networks */}
-                  <div className={`space-y-5 ${embedUrl ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
+                  <div className="lg:col-span-6 space-y-5">
                     <div className="space-y-2">
                       <h4 className="text-xs font-mono font-black text-stone-400 uppercase tracking-wider">
                         ¿Cómo apoya al proyecto?
@@ -456,24 +748,18 @@ export default function AlianzasTab({
                     )}
                   </div>
 
-                  {/* Right Column: Embedded Video */}
-                  {embedUrl && (
-                    <div className="lg:col-span-6 space-y-2">
-                      <h4 className="text-xs font-mono font-black text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <Video className="w-4 h-4 text-emerald-600" />
-                        Video / Evidencia Presentación:
-                      </h4>
-                      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border-2 border-emerald-500/30 shadow-md">
-                        <iframe
-                          src={embedUrl}
-                          title={`Video de ${aliado.nombre}`}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                        />
-                      </div>
-                    </div>
-                  )}
+                  {/* Right Column: Carousel of Media Evidences */}
+                  <div className="lg:col-span-6 space-y-2">
+                    <h4 className="text-xs font-mono font-black text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Video className="w-4 h-4 text-emerald-600" />
+                      Evidencias Multimedia ({evidenciasList.length}):
+                    </h4>
+
+                    <AliadoMediaSlider
+                      evidencias={evidenciasList}
+                      nombreAliado={aliado.nombre}
+                    />
+                  </div>
                 </div>
 
                 {/* Footer: Reaction 👍 Like */}
@@ -557,7 +843,7 @@ export default function AlianzasTab({
                     </label>
                     <div className="flex items-center gap-3">
                       {(archivoLogo || logoUrl) && (
-                        <div className="w-16 h-16 rounded-xl border border-stone-200 bg-stone-50 p-1 flex items-center justify-center shrink-0">
+                        <div className="w-20 h-20 rounded-xl border border-stone-200 bg-stone-50 p-1.5 flex items-center justify-center shrink-0">
                           <img
                             src={archivoLogo ? URL.createObjectURL(archivoLogo) : logoUrl}
                             alt="Logo preview"
@@ -597,18 +883,113 @@ export default function AlianzasTab({
                     />
                   </div>
 
-                  {/* Video URL */}
-                  <div className="space-y-1">
-                    <label className="block text-xs font-mono font-bold text-stone-700 uppercase">
-                      Enlace de Video (YouTube o Google Drive) (Opcional):
-                    </label>
-                    <input
-                      type="url"
-                      value={videoUrl}
-                      onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=... o https://drive.google.com/file/d/..."
-                      className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-xs text-stone-900 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                    />
+                  {/* Evidencias Multimedia Section */}
+                  <div className="space-y-3 border-t border-stone-100 pt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <label className="block text-xs font-mono font-bold text-stone-700 uppercase">
+                        Evidencias Multimedia ({evidenciasDraft.length}):
+                      </label>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleAgregarEvidencia('youtube')}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition cursor-pointer"
+                        >
+                          <Video className="w-3 h-3" />
+                          <span>+ YouTube</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAgregarEvidencia('imagen')}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-lg border border-cyan-200 transition cursor-pointer"
+                        >
+                          <Image className="w-3 h-3" />
+                          <span>+ Foto/Imagen</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAgregarEvidencia('video_archivo')}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition cursor-pointer"
+                        >
+                          <Play className="w-3 h-3" />
+                          <span>+ Video Archivo</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {evidenciasDraft.length === 0 ? (
+                      <p className="text-xs text-stone-400 font-mono italic bg-stone-50 p-3 rounded-xl border border-stone-200">
+                        No has agregado evidencias multimedia aún. Puedes subir fotos, archivos de video o enlaces de YouTube.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {evidenciasDraft.map((ev, idx) => (
+                          <div
+                            key={ev.id}
+                            className="bg-stone-50 p-3 rounded-xl border border-stone-200 text-xs space-y-2 relative"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono font-bold text-emerald-800 text-[10px] uppercase bg-emerald-100 px-2 py-0.5 rounded-md">
+                                Evidencia #{idx + 1}: {ev.tipo === 'youtube' ? 'Link YouTube' : ev.tipo === 'imagen' ? 'Foto / Imagen' : 'Archivo de Video'}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleEliminarEvidencia(ev.id)}
+                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition cursor-pointer"
+                                title="Eliminar esta evidencia"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Input according to type */}
+                            {ev.tipo === 'youtube' ? (
+                              <input
+                                type="url"
+                                placeholder="Ej. https://www.youtube.com/watch?v=..."
+                                value={ev.url}
+                                onChange={(e) => handleActualizarEvidencia(ev.id, 'url', e.target.value)}
+                                className="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono"
+                              />
+                            ) : (
+                              <div className="space-y-1">
+                                <div className="relative border border-dashed border-stone-300 rounded-lg p-2.5 text-center bg-white hover:bg-stone-50 cursor-pointer">
+                                  <input
+                                    type="file"
+                                    accept={ev.tipo === 'imagen' ? 'image/*' : 'video/*'}
+                                    onChange={(e) => {
+                                      if (e.target.files && e.target.files[0]) {
+                                        handleActualizarEvidencia(ev.id, 'file', e.target.files[0]);
+                                      }
+                                    }}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  />
+                                  <span className="text-[11px] text-stone-600 font-mono font-bold block truncate">
+                                    {ev.file ? ev.file.name : ev.url ? 'Cambiar archivo subido...' : `Seleccionar ${ev.tipo === 'imagen' ? 'imagen (JPG/PNG)' : 'video (MP4/MOV)'} desde tu dispositivo...`}
+                                  </span>
+                                </div>
+                                {ev.url && !ev.file && (
+                                  <span className="text-[10px] text-stone-400 font-mono block truncate">
+                                    URL actual: {ev.url}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Descripción corta */}
+                            <input
+                              type="text"
+                              placeholder="Descripción corta (ej. Entrevista con el gerente de Wilo Servis)"
+                              value={ev.descripcion}
+                              onChange={(e) => handleActualizarEvidencia(ev.id, 'descripcion', e.target.value)}
+                              className="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-sans"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Redes Sociales Section */}
@@ -794,3 +1175,4 @@ export default function AlianzasTab({
     </div>
   );
 }
+

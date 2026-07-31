@@ -126,6 +126,7 @@ export interface ProyectoMetadata {
   donacionesQrUrl?: string;
   donacionesTitular?: string;
   aliadosIntroTexto?: string;
+  aliadosImagenUrl?: string;
 }
 
 export function obtenerManualSecciones(metadata?: ProyectoMetadata | null): ManualSeccion[] {

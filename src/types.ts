@@ -74,12 +74,20 @@ export interface RedSocialAliado {
   url: string;
 }
 
+export interface EvidenciaMedia {
+  id: string;
+  tipo: 'youtube' | 'imagen' | 'video_archivo';
+  url: string;
+  descripcion: string;
+}
+
 export interface Aliado {
   id: string;
   logoUrl: string;
   nombre: string;
   descripcion: string;
-  videoUrl: string;
+  videoUrl?: string;
+  evidenciasMedia?: EvidenciaMedia[];
   redesSociales: RedSocialAliado[];
   likes: number;
   likesUsers: string[];

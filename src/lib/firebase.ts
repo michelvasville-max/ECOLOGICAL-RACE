@@ -448,7 +448,8 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
     manualSecciones: metadata.manualSecciones || [],
     donacionesQrUrl: metadata.donacionesQrUrl || '',
     donacionesTitular: metadata.donacionesTitular || 'Neida Villegas',
-    aliadosIntroTexto: metadata.aliadosIntroTexto || ''
+    aliadosIntroTexto: metadata.aliadosIntroTexto || '',
+    aliadosImagenUrl: metadata.aliadosImagenUrl || ''
   });
 }
 
