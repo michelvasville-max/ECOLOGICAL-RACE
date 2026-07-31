@@ -95,29 +95,77 @@ export default function ActasSemanalesTab({
 
   const handleDescargarImagen = async (url: string, tituloOCaption?: string) => {
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
+      let blob: Blob;
+      if (url.startsWith('data:')) {
+        const arr = url.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        blob = new Blob([u8arr], { type: mime });
+      } else {
+        const response = await fetch(url);
+        blob = await response.blob();
+      }
+
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      const extension = blob.type.split('/')[1] || 'jpg';
+
+      const mimeType = blob.type || 'image/jpeg';
+      let extension = mimeType.split('/')[1] || 'jpg';
+      if (extension.includes(';')) extension = extension.split(';')[0];
+      if (extension === 'jpeg') extension = 'jpg';
+
       const nombreLimpio = (tituloOCaption || 'evidencia')
         .toLowerCase()
         .replace(/[^a-z0-9]/gi, '_')
-        .slice(0, 30);
+        .replace(/_+/g, '_')
+        .slice(0, 30) || 'evidencia';
+
       a.download = `${nombreLimpio}.${extension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      a.download = 'evidencia.jpg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      console.error("Error al descargar la imagen mediante fetch:", error);
+      // Fallback usando Image + Canvas
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                const nombreLimpio = (tituloOCaption || 'evidencia')
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]/gi, '_')
+                  .slice(0, 30) || 'evidencia';
+                a.download = `${nombreLimpio}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+              }
+            }, 'image/jpeg', 0.95);
+          }
+        };
+        img.src = url;
+      } catch (e) {
+        console.error("Error en fallback de descarga:", e);
+      }
     }
   };
 
