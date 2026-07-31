@@ -85,7 +85,10 @@ export default function ActasSemanalesTab({
   const [subiendoFoto, setSubiendoFoto] = useState(false);
 
   // Estados para edición de fotos del mosaico
+  const [semanaFoto, setSemanaFoto] = useState<number>(5);
+  const [filtroMosaicoSemana, setFiltroMosaicoSemana] = useState<string>('all');
   const [fotoEditandoId, setFotoEditandoId] = useState<string | null>(null);
+  const [semanaEditando, setSemanaEditando] = useState<number>(1);
   const [tituloEditando, setTituloEditando] = useState<string>('');
   const [etiquetaEditando, setEtiquetaEditando] = useState<string>('');
   const [descripcionEditando, setDescripcionEditando] = useState<string>('');
@@ -94,9 +97,15 @@ export default function ActasSemanalesTab({
   const [guardandoEdicion, setGuardandoEdicion] = useState<boolean>(false);
 
   const handleDescargarImagen = async (url: string, tituloOCaption?: string) => {
-    try {
-      let blob: Blob;
-      if (url.startsWith('data:')) {
+    const nombreLimpio = (tituloOCaption || 'evidencia')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/gi, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 30) || 'evidencia';
+
+    // 1. Data URLs (Base64)
+    if (url.startsWith('data:')) {
+      try {
         const arr = url.split(',');
         const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
         const bstr = atob(arr[1]);
@@ -105,67 +114,102 @@ export default function ActasSemanalesTab({
         while (n--) {
           u8arr[n] = bstr.charCodeAt(n);
         }
-        blob = new Blob([u8arr], { type: mime });
-      } else {
-        const response = await fetch(url);
-        blob = await response.blob();
+        const blob = new Blob([u8arr], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        const extension = mime.split('/')[1] || 'jpg';
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${nombreLimpio}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        return;
+      } catch {
+        // Fallback if data URL decoding fails
       }
+    }
 
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
+    // 2. Direct fetch if possible
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      if (response.ok) {
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const mimeType = blob.type || 'image/jpeg';
+        let extension = mimeType.split('/')[1] || 'jpg';
+        if (extension.includes(';')) extension = extension.split(';')[0];
+        if (extension === 'jpeg') extension = 'jpg';
 
-      const mimeType = blob.type || 'image/jpeg';
-      let extension = mimeType.split('/')[1] || 'jpg';
-      if (extension.includes(';')) extension = extension.split(';')[0];
-      if (extension === 'jpeg') extension = 'jpg';
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${nombreLimpio}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
+    } catch {
+      // Quietly fall back if cross-origin fetch is restricted by browser CORS
+    }
 
-      const nombreLimpio = (tituloOCaption || 'evidencia')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/gi, '_')
-        .replace(/_+/g, '_')
-        .slice(0, 30) || 'evidencia';
-
-      a.download = `${nombreLimpio}.${extension}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-      console.error("Error al descargar la imagen mediante fetch:", error);
-      // Fallback usando Image + Canvas
-      try {
+    // 3. Fallback using Image + Canvas
+    try {
+      const downloaded = await new Promise<boolean>((resolve) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                const nombreLimpio = (tituloOCaption || 'evidencia')
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]/gi, '_')
-                  .slice(0, 30) || 'evidencia';
-                a.download = `${nombreLimpio}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-              }
-            }, 'image/jpeg', 0.95);
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  const blobUrl = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = blobUrl;
+                  a.download = `${nombreLimpio}.jpg`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(blobUrl);
+                  resolve(true);
+                } else {
+                  resolve(false);
+                }
+              }, 'image/jpeg', 0.95);
+            } else {
+              resolve(false);
+            }
+          } catch {
+            resolve(false);
           }
         };
+        img.onerror = () => resolve(false);
         img.src = url;
-      } catch (e) {
-        console.error("Error en fallback de descarga:", e);
-      }
+      });
+
+      if (downloaded) return;
+    } catch {
+      // Continue to final fallback
+    }
+
+    // 4. Final Fallback: trigger download link / new tab anchor
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.download = `${nombreLimpio}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      window.open(url, '_blank');
     }
   };
 
@@ -173,6 +217,7 @@ export default function ActasSemanalesTab({
 
   // Filter records belonging to selected week and selected school
   const registrosSemana = registros.filter((r) => {
+    if (!r.aulaId || r.aulaId.trim() === '') return false;
     if (r.semana !== semanaSeleccionada) return false;
     if (ieFiltrada === 'all') return true;
     const aula = aulas.find((a) => a.id === r.aulaId);
@@ -247,6 +292,12 @@ export default function ActasSemanalesTab({
 
   // Sort chronological: Newest to oldest (recent first)
   itemsGaleria.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+  // Filter mosaic items if a specific report week is selected
+  const itemsGaleriaFiltrados = itemsGaleria.filter((item) => {
+    if (filtroMosaicoSemana === 'all') return true;
+    return item.semana === Number(filtroMosaicoSemana);
+  });
 
   // Deterministic heights to enforce varied mosaic/collage layout
   const getCollageClasses = (index: number) => {
@@ -331,7 +382,7 @@ export default function ActasSemanalesTab({
       const nuevoRegistroFoto: RegistroSemanal = {
         id: `foto-${Date.now()}`,
         aulaId: '',
-        semana: semanaSeleccionada,
+        semana: semanaFoto || semanaSeleccionada,
         fecha: fechaFoto || new Date().toISOString().split('T')[0],
         kgPlastico: 0,
         kgAluminio: 0,
@@ -386,7 +437,7 @@ export default function ActasSemanalesTab({
         ...(regOriginal || {
           id: itemId,
           aulaId: '',
-          semana: itemSemana,
+          semana: semanaEditando || itemSemana,
           kgPlastico: 0,
           kgAluminio: 0,
           kgPapel: 0,
@@ -394,6 +445,7 @@ export default function ActasSemanalesTab({
           montoVentaSoles: 0,
         }),
         id: itemId,
+        semana: semanaEditando || itemSemana,
         fecha: fechaEditando || regOriginal?.fecha || new Date().toISOString().split('T')[0],
         fotoEvidenciaUrl: url,
         fotoEvidenciaTipo,
@@ -665,7 +717,10 @@ export default function ActasSemanalesTab({
               {rolActual === 'ADMIN' && (
                 <button
                   type="button"
-                  onClick={() => setMostrarFormFoto(!mostrarFormFoto)}
+                  onClick={() => {
+                    setSemanaFoto(semanaSeleccionada);
+                    setMostrarFormFoto(!mostrarFormFoto);
+                  }}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer transition-all duration-200"
                 >
                   {mostrarFormFoto ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -674,10 +729,29 @@ export default function ActasSemanalesTab({
               )}
             </div>
 
-            {/* Sub-label explaining visual album properties */}
-            <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wide mb-3">
-              ÁLBUM DE RECUERDOS (ORDENADO CRONOLÓGICAMENTE)
-            </p>
+            {/* Sub-label and filter selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wide">
+                ÁLBUM DE RECUERDOS (ORDENADO CRONOLÓGICAMENTE)
+              </p>
+              <div className="flex items-center space-x-1.5 self-start sm:self-auto">
+                <label className="text-[10px] font-mono text-stone-500 uppercase font-black whitespace-nowrap">
+                  Filtrar por N.° de reporte:
+                </label>
+                <select
+                  value={filtroMosaicoSemana}
+                  onChange={(e) => setFiltroMosaicoSemana(e.target.value)}
+                  className="bg-white border border-stone-200 rounded-md px-2 py-1 text-[11px] font-semibold text-stone-700 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
+                >
+                  <option value="all">Todos los reportes</option>
+                  {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
+                    <option key={s} value={String(s)}>
+                      Reporte N.° {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {/* Photo/Video upload form inline */}
             <AnimatePresence>
@@ -730,7 +804,7 @@ export default function ActasSemanalesTab({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
                         Fecha de la Evidencia:
@@ -742,6 +816,23 @@ export default function ActasSemanalesTab({
                         className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                         required
                       />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
+                        N.° de Reporte Semanal:
+                      </label>
+                      <select
+                        value={semanaFoto}
+                        onChange={(e) => setSemanaFoto(Number(e.target.value))}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+                      >
+                        {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
+                          <option key={s} value={s}>
+                            Reporte N.° {s}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="space-y-1">
@@ -808,15 +899,17 @@ export default function ActasSemanalesTab({
 
             {/* Scrapbook Polaroid Collage Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-7 p-1 overflow-y-auto max-h-[850px]" id="scrapbook-gallery">
-              {itemsGaleria.length === 0 ? (
+              {itemsGaleriaFiltrados.length === 0 ? (
                 <div className="col-span-full py-16 px-4 text-center bg-stone-100/60 border border-dashed border-stone-300 rounded-xl">
                   <Camera className="w-8 h-8 text-stone-300 mx-auto mb-2" />
                   <p className="text-xs text-stone-500 font-sans font-bold leading-relaxed">
-                    Aún no hay evidencias cargadas. El Administrador puede agregar la primera foto o video.
+                    {filtroMosaicoSemana === 'all'
+                      ? 'Aún no hay evidencias cargadas. El Administrador puede agregar la primera foto o video.'
+                      : `No hay evidencias asociadas al Reporte N.° ${filtroMosaicoSemana}.`}
                   </p>
                 </div>
               ) : (
-                itemsGaleria.map((item, idx) => {
+                itemsGaleriaFiltrados.map((item, idx) => {
                   const reaccionesDeEstaFoto = reaccionesFotos.find(r => r.id === item.id);
                   const likesCount = reaccionesDeEstaFoto?.likes || 0;
                   const dislikesCount = reaccionesDeEstaFoto?.dislikes || 0;
@@ -900,8 +993,8 @@ export default function ActasSemanalesTab({
                           </div>
                         </div>
 
-                        {/* Fecha, Etiqueta, and Titulo inputs */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {/* Fecha, Semana, Etiqueta, and Titulo inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                           <div className="space-y-1">
                             <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
                               Fecha de Evidencia:
@@ -913,6 +1006,23 @@ export default function ActasSemanalesTab({
                               className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                               required
                             />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                              N.° de Reporte Semanal:
+                            </label>
+                            <select
+                              value={semanaEditando}
+                              onChange={(e) => setSemanaEditando(Number(e.target.value))}
+                              className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+                            >
+                              {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
+                                <option key={s} value={s}>
+                                  Reporte N.° {s}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           <div className="space-y-1">
@@ -1078,6 +1188,7 @@ export default function ActasSemanalesTab({
                                   setFotoEditandoId(item.id);
                                   setTituloEditando(item.titulo || '');
                                   setEtiquetaEditando(item.etiqueta || '');
+                                  setSemanaEditando(item.semana || semanaSeleccionada);
                                   setDescripcionEditando(item.caption);
                                   setFechaEditando(item.fecha ? item.fecha.split('T')[0] : new Date().toISOString().split('T')[0]);
                                   setFotoArchivoEditando(null);
@@ -1112,7 +1223,7 @@ export default function ActasSemanalesTab({
             <div className="mt-4 bg-stone-100 border border-stone-200 p-3 rounded-xl flex items-start space-x-2.5">
               <ShieldAlert className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div className="text-[10px] font-mono text-stone-500 leading-tight">
-                <strong>Protección de Privacidad:</strong> Por políticas de protección de datos y privacidad, las fotos priorizan planos de manos, espaldas o perfiles, sin mostrar rostros de estudiantes menores de edad de forma identificable.
+                <strong>Protección de Privacidad:</strong> Este espacio recopila fotos y videos de las actividades del proyecto. Su uso se limita exclusivamente a fines educativos y de difusión del programa de reciclaje escolar.
               </div>
             </div>
           </div>
