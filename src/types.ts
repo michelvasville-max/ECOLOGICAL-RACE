@@ -30,7 +30,9 @@ export interface RegistroSemanal {
   multiplicadorVerde: boolean; // +20%
   montoVentaSoles: number;
   ticketVentaUrl?: string; // photo of receipt
-  fotoEvidenciaUrl?: string; // eco-activity photo (no kids' faces)
+  fotoEvidenciaUrl?: string; // eco-activity photo or video (no kids' faces)
+  fotoEvidenciaTipo?: 'imagen' | 'video';
+  tituloEvidencia?: string;
   descripcionEvidencia?: string;
   updatedAt?: string; // Timestamp of latest save/modification
 }

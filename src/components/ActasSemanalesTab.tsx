@@ -31,9 +31,11 @@ interface Props {
 interface ItemGaleria {
   id: string;
   url: string;
+  titulo?: string;
   caption: string;
   fecha: string; // ISO date string
   semana: number;
+  tipo: 'imagen' | 'video';
 }
 
 const formatFechaSencilla = (fechaStr: string) => {
@@ -75,12 +77,16 @@ export default function ActasSemanalesTab({
 
   const [mostrarFormFoto, setMostrarFormFoto] = useState(false);
   const [fotoArchivo, setFotoArchivo] = useState<File | null>(null);
+  const [tituloFoto, setTituloFoto] = useState('');
   const [descripcionFoto, setDescripcionFoto] = useState('');
+  const [fechaFoto, setFechaFoto] = useState(new Date().toISOString().split('T')[0]);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
 
   // Estados para edición de fotos del mosaico
   const [fotoEditandoId, setFotoEditandoId] = useState<string | null>(null);
+  const [tituloEditando, setTituloEditando] = useState<string>('');
   const [descripcionEditando, setDescripcionEditando] = useState<string>('');
+  const [fechaEditando, setFechaEditando] = useState<string>('');
   const [fotoArchivoEditando, setFotoArchivoEditando] = useState<File | null>(null);
   const [guardandoEdicion, setGuardandoEdicion] = useState<boolean>(false);
 
@@ -124,18 +130,30 @@ export default function ActasSemanalesTab({
     if (semanaSeleccionada < totalSemanas) setSemanaSeleccionada(semanaSeleccionada + 1);
   };
 
-  // Compile full photo album chronologically
+  // Compile full photo/video album chronologically
   const itemsGaleria: ItemGaleria[] = [];
 
-  // Add real photos uploaded by Admin
+  // Add real photos and videos uploaded by Admin
   registros.forEach((reg) => {
     if (reg.fotoEvidenciaUrl) {
+      let tipo: 'imagen' | 'video' = reg.fotoEvidenciaTipo || 'imagen';
+      if (!reg.fotoEvidenciaTipo) {
+        const lower = reg.fotoEvidenciaUrl.toLowerCase();
+        if (
+          lower.match(/\.(mp4|webm|ogg|mov|m4v|mkv|avi)(\?.*)?$/i) ||
+          reg.fotoEvidenciaUrl.startsWith('data:video/')
+        ) {
+          tipo = 'video';
+        }
+      }
       itemsGaleria.push({
         id: reg.id,
         url: reg.fotoEvidenciaUrl,
+        titulo: reg.tituloEvidencia || '',
         caption: reg.descripcionEvidencia || `Evidencia de pesaje - Reporte N.° ${reg.semana}`,
         fecha: reg.fecha || reg.updatedAt || '2026-07-02',
         semana: reg.semana,
+        tipo,
       });
     }
   });
@@ -209,29 +227,33 @@ export default function ActasSemanalesTab({
   const handleGuardarFotoNueva = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fotoArchivo) {
-      alert("Por favor selecciona una foto.");
+      alert("Por favor selecciona una foto o video.");
       return;
     }
     if (!descripcionFoto.trim()) {
-      alert("Por favor escribe una descripción para la foto.");
+      alert("Por favor escribe una descripción para la evidencia.");
       return;
     }
 
     setSubiendoFoto(true);
     try {
       const url = await subirImagenAFirebase(fotoArchivo, 'evidencias');
+      const esVideo = fotoArchivo.type.startsWith('video/');
+      const fotoEvidenciaTipo: 'imagen' | 'video' = esVideo ? 'video' : 'imagen';
       
       const nuevoRegistroFoto: RegistroSemanal = {
         id: `foto-${Date.now()}`,
         aulaId: '',
         semana: semanaSeleccionada,
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: fechaFoto || new Date().toISOString().split('T')[0],
         kgPlastico: 0,
         kgAluminio: 0,
         kgPapel: 0,
         multiplicadorVerde: false,
         montoVentaSoles: 0,
         fotoEvidenciaUrl: url,
+        fotoEvidenciaTipo,
+        tituloEvidencia: tituloFoto.trim(),
         descripcionEvidencia: descripcionFoto.trim(),
         updatedAt: new Date().toISOString()
       };
@@ -240,38 +262,42 @@ export default function ActasSemanalesTab({
         await onGuardarRegistro(nuevoRegistroFoto);
       }
       
+      setTituloFoto('');
       setDescripcionFoto('');
+      setFechaFoto(new Date().toISOString().split('T')[0]);
       setFotoArchivo(null);
       setMostrarFormFoto(false);
-      alert("¡Foto añadida con éxito a la galería!");
+      alert("¡Evidencia añadida con éxito a la galería!");
     } catch (error) {
-      console.error("Error al guardar la foto de evidencia:", error);
-      alert("Hubo un error al subir o guardar la foto.");
+      console.error("Error al guardar la evidencia:", error);
+      alert("Hubo un error al subir o guardar la evidencia.");
     } finally {
       setSubiendoFoto(false);
     }
   };
 
-  const handleGuardarEdicionFoto = async (itemId: string, itemUrl: string, itemSemana: number, itemFecha: string) => {
+  const handleGuardarEdicionFoto = async (itemId: string, itemUrl: string, itemSemana: number) => {
     if (!descripcionEditando.trim()) {
-      alert("Por favor escribe una descripción para la foto.");
+      alert("Por favor escribe una descripción para la evidencia.");
       return;
     }
 
     setGuardandoEdicion(true);
     try {
+      const regOriginal = registros.find((r) => r.id === itemId);
       let url = itemUrl;
+      let fotoEvidenciaTipo: 'imagen' | 'video' = regOriginal?.fotoEvidenciaTipo || 'imagen';
+
       if (fotoArchivoEditando) {
         url = await subirImagenAFirebase(fotoArchivoEditando, 'evidencias');
+        fotoEvidenciaTipo = fotoArchivoEditando.type.startsWith('video/') ? 'video' : 'imagen';
       }
 
-      const regOriginal = registros.find((r) => r.id === itemId);
       const regActualizado: RegistroSemanal = {
         ...(regOriginal || {
           id: itemId,
           aulaId: '',
           semana: itemSemana,
-          fecha: itemFecha,
           kgPlastico: 0,
           kgAluminio: 0,
           kgPapel: 0,
@@ -279,7 +305,10 @@ export default function ActasSemanalesTab({
           montoVentaSoles: 0,
         }),
         id: itemId,
+        fecha: fechaEditando || regOriginal?.fecha || new Date().toISOString().split('T')[0],
         fotoEvidenciaUrl: url,
+        fotoEvidenciaTipo,
+        tituloEvidencia: tituloEditando.trim(),
         descripcionEvidencia: descripcionEditando.trim(),
         updatedAt: new Date().toISOString(),
       };
@@ -290,7 +319,9 @@ export default function ActasSemanalesTab({
 
       setFotoEditandoId(null);
       setFotoArchivoEditando(null);
+      setTituloEditando('');
       setDescripcionEditando('');
+      setFechaEditando('');
     } catch (error) {
       console.error("Error al guardar la edición de evidencia:", error);
       alert("Hubo un error al guardar los cambios de la evidencia.");
@@ -547,7 +578,7 @@ export default function ActasSemanalesTab({
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer transition-all duration-200"
                 >
                   {mostrarFormFoto ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                  <span>{mostrarFormFoto ? 'Cerrar' : '+ Añadir Foto'}</span>
+                  <span>{mostrarFormFoto ? 'Cerrar' : '+ Añadir Evidencia'}</span>
                 </button>
               )}
             </div>
@@ -557,7 +588,7 @@ export default function ActasSemanalesTab({
               ÁLBUM DE RECUERDOS (ORDENADO CRONOLÓGICAMENTE)
             </p>
 
-            {/* Photo upload form inline */}
+            {/* Photo/Video upload form inline */}
             <AnimatePresence>
               {mostrarFormFoto && (
                 <motion.form
@@ -569,12 +600,12 @@ export default function ActasSemanalesTab({
                 >
                   <div className="flex justify-between items-center border-b border-stone-100 pb-2">
                     <span className="text-[10px] font-mono text-emerald-700 font-extrabold uppercase tracking-wider">
-                      Subir Nueva Foto de Evidencia
+                      Subir Nueva Evidencia (Foto o Video)
                     </span>
                     <button
                       type="button"
                       onClick={() => setMostrarFormFoto(false)}
-                      className="text-stone-400 hover:text-stone-600"
+                      className="text-stone-400 hover:text-stone-600 cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -582,12 +613,12 @@ export default function ActasSemanalesTab({
 
                   <div className="space-y-2">
                     <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
-                      Seleccionar Foto:
+                      Seleccionar Foto o Video:
                     </label>
                     <div className="relative border border-dashed border-stone-300 rounded-lg p-4 text-center hover:bg-stone-50 transition cursor-pointer">
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             setFotoArchivo(e.target.files[0]);
@@ -599,12 +630,40 @@ export default function ActasSemanalesTab({
                       <div className="flex flex-col items-center justify-center space-y-1">
                         <Upload className="w-5 h-5 text-stone-400" />
                         <span className="text-xs text-stone-600 font-semibold leading-tight">
-                          {fotoArchivo ? fotoArchivo.name : 'Selecciona una imagen o arrástrala aquí'}
+                          {fotoArchivo ? fotoArchivo.name : 'Selecciona una foto o video, o arrástralo aquí'}
                         </span>
                         <span className="text-[9px] font-mono text-stone-400">
-                          Formatos: JPG, PNG, WEBP (Se comprime automáticamente)
+                          Formatos: Fotos (JPG, PNG, WEBP) o Videos (MP4, WEBM, MOV)
                         </span>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
+                        Fecha de la Evidencia:
+                      </label>
+                      <input
+                        type="date"
+                        value={fechaFoto}
+                        onChange={(e) => setFechaFoto(e.target.value)}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
+                        Título de la Evidencia (Opcional):
+                      </label>
+                      <input
+                        type="text"
+                        value={tituloFoto}
+                        onChange={(e) => setTituloFoto(e.target.value)}
+                        placeholder="Ej. JORNADA DE RECICLAJE - AULA 3B"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                      />
                     </div>
                   </div>
 
@@ -635,7 +694,7 @@ export default function ActasSemanalesTab({
                     ) : (
                       <>
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Guardar Foto</span>
+                        <span>Guardar Evidencia</span>
                       </>
                     )}
                   </button>
@@ -649,7 +708,7 @@ export default function ActasSemanalesTab({
                 <div className="col-span-full py-16 px-4 text-center bg-stone-100/60 border border-dashed border-stone-300 rounded-xl">
                   <Camera className="w-8 h-8 text-stone-300 mx-auto mb-2" />
                   <p className="text-xs text-stone-500 font-sans font-bold leading-relaxed">
-                    Aún no hay evidencias cargadas. El Administrador puede agregar la primera foto.
+                    Aún no hay evidencias cargadas. El Administrador puede agregar la primera foto o video.
                   </p>
                 </div>
               ) : (
@@ -672,6 +731,13 @@ export default function ActasSemanalesTab({
                   const angleClass = rotationAngles[idx % rotationAngles.length];
 
                   if (fotoEditandoId === item.id) {
+                    const previewEsVideo = fotoArchivoEditando
+                      ? fotoArchivoEditando.type.startsWith('video/')
+                      : item.tipo === 'video';
+                    const previewUrl = fotoArchivoEditando
+                      ? URL.createObjectURL(fotoArchivoEditando)
+                      : item.url;
+
                     return (
                       <div
                         key={item.id}
@@ -693,21 +759,29 @@ export default function ActasSemanalesTab({
                           </button>
                         </div>
 
-                        {/* Image Preview / Replacement */}
+                        {/* Image / Video Preview / Replacement */}
                         <div className="space-y-1">
                           <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
-                            Imagen / Reemplazar (Opcional):
+                            Archivo / Reemplazar (Opcional):
                           </label>
                           <div className="flex items-center gap-2">
-                            <img
-                              src={fotoArchivoEditando ? URL.createObjectURL(fotoArchivoEditando) : item.url}
-                              alt="Vista previa"
-                              className="w-16 h-12 object-cover rounded border border-stone-200 shrink-0"
-                            />
+                            {previewEsVideo ? (
+                              <video
+                                src={previewUrl}
+                                controls
+                                className="w-16 h-12 object-cover rounded border border-stone-200 shrink-0"
+                              />
+                            ) : (
+                              <img
+                                src={previewUrl}
+                                alt="Vista previa"
+                                className="w-16 h-12 object-cover rounded border border-stone-200 shrink-0"
+                              />
+                            )}
                             <div className="relative flex-1 border border-dashed border-stone-300 rounded-lg p-2 text-center hover:bg-stone-50 cursor-pointer">
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,video/*"
                                 onChange={(e) => {
                                   if (e.target.files && e.target.files[0]) {
                                     setFotoArchivoEditando(e.target.files[0]);
@@ -716,9 +790,38 @@ export default function ActasSemanalesTab({
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                               />
                               <span className="text-[10px] text-stone-600 font-semibold block truncate">
-                                {fotoArchivoEditando ? fotoArchivoEditando.name : 'Cambiar foto...'}
+                                {fotoArchivoEditando ? fotoArchivoEditando.name : 'Cambiar archivo...'}
                               </span>
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Fecha and Titulo inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                              Fecha de la Evidencia:
+                            </label>
+                            <input
+                              type="date"
+                              value={fechaEditando}
+                              onChange={(e) => setFechaEditando(e.target.value)}
+                              className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                              required
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                              Título (Opcional):
+                            </label>
+                            <input
+                              type="text"
+                              value={tituloEditando}
+                              onChange={(e) => setTituloEditando(e.target.value)}
+                              placeholder="Ej. JORNADA DE RECICLAJE"
+                              className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                            />
                           </div>
                         </div>
 
@@ -752,7 +855,7 @@ export default function ActasSemanalesTab({
                           <button
                             type="button"
                             disabled={guardandoEdicion}
-                            onClick={() => handleGuardarEdicionFoto(item.id, item.url, item.semana, item.fecha)}
+                            onClick={() => handleGuardarEdicionFoto(item.id, item.url, item.semana)}
                             className="px-3 py-1 text-[10px] font-mono font-black text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 rounded-lg transition cursor-pointer flex items-center space-x-1"
                           >
                             {guardandoEdicion ? (
@@ -780,15 +883,24 @@ export default function ActasSemanalesTab({
                       {/* Paper Tape decoration */}
                       <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-14 h-4 bg-amber-100/50 shadow-[0_1px_2px_rgba(0,0,0,0.02)] border border-amber-200/20 backdrop-blur-xs -rotate-2 z-20" />
 
-                      {/* Photo Area with irregular rounded effect */}
+                      {/* Photo / Video Area */}
                       <div className="w-full aspect-[4/3] overflow-hidden bg-stone-100 border border-stone-200/60 relative rounded-[1px_2px_1px_2px]">
-                        <img
-                          src={item.url}
-                          alt={item.caption}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover filter brightness-95 hover:brightness-100 transition duration-300"
-                        />
-                        <span className="absolute top-2 right-2 text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
+                        {item.tipo === 'video' ? (
+                          <video
+                            src={item.url}
+                            controls
+                            preload="metadata"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={item.url}
+                            alt={item.caption}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover filter brightness-95 hover:brightness-100 transition duration-300"
+                          />
+                        )}
+                        <span className="absolute top-2 right-2 text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs z-10 pointer-events-none">
                           REP. {item.semana}
                         </span>
                       </div>
@@ -799,6 +911,11 @@ export default function ActasSemanalesTab({
                           <span className="text-[9px] font-mono font-bold text-stone-400 block mb-1">
                             {formatFechaSencilla(item.fecha)}
                           </span>
+                          {item.titulo && (
+                            <h4 className="text-xs font-black uppercase tracking-wide text-emerald-700 font-mono mb-1.5 drop-shadow-[0_0_6px_rgba(16,185,129,0.35)] leading-snug">
+                              {item.titulo}
+                            </h4>
+                          )}
                           <p className="text-xs text-stone-700 font-sans font-semibold italic leading-snug tracking-tight line-clamp-3" title={item.caption}>
                             "{item.caption}"
                           </p>
@@ -827,7 +944,9 @@ export default function ActasSemanalesTab({
                                 type="button"
                                 onClick={() => {
                                   setFotoEditandoId(item.id);
+                                  setTituloEditando(item.titulo || '');
                                   setDescripcionEditando(item.caption);
+                                  setFechaEditando(item.fecha ? item.fecha.split('T')[0] : new Date().toISOString().split('T')[0]);
                                   setFotoArchivoEditando(null);
                                 }}
                                 className="flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200 font-bold transition duration-150 cursor-pointer select-none"
