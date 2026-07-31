@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Aula, RegistroSemanal, Comentario, RolUsuario, Institucion, ReaccionFoto } from '../types';
 import CommentsSection from './CommentsSection';
-import { Calendar, FileText, Camera, Edit2, Plus, ArrowLeft, ArrowRight, ShieldAlert, BadgeHelp, CheckCircle2, Heart, Upload, Loader2, X } from 'lucide-react';
+import { Calendar, FileText, Camera, Edit2, Plus, ArrowLeft, ArrowRight, ShieldAlert, BadgeHelp, CheckCircle2, Heart, Upload, Loader2, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { subirImagenAFirebase } from '../lib/firebase';
+import { subirImagenAFirebase, eliminarRegistro } from '../lib/firebase';
 
 interface Props {
   registros: RegistroSemanal[];
@@ -19,6 +19,7 @@ interface Props {
   onEditarRegistro: (reg: RegistroSemanal) => void;
   onNuevoRegistro: () => void;
   onGuardarRegistro?: (reg: RegistroSemanal) => Promise<void>;
+  onEliminarRegistro?: (id: string) => Promise<void>;
   usuarioGoogle: FirebaseUser | null;
   reaccionesFotos: ReaccionFoto[];
   onGuardarReaccionFoto: (reac: ReaccionFoto) => Promise<void>;
@@ -61,6 +62,7 @@ export default function ActasSemanalesTab({
   onEditarRegistro,
   onNuevoRegistro,
   onGuardarRegistro,
+  onEliminarRegistro,
   usuarioGoogle,
   reaccionesFotos,
   onGuardarReaccionFoto,
@@ -75,6 +77,12 @@ export default function ActasSemanalesTab({
   const [fotoArchivo, setFotoArchivo] = useState<File | null>(null);
   const [descripcionFoto, setDescripcionFoto] = useState('');
   const [subiendoFoto, setSubiendoFoto] = useState(false);
+
+  // Estados para edición de fotos del mosaico
+  const [fotoEditandoId, setFotoEditandoId] = useState<string | null>(null);
+  const [descripcionEditando, setDescripcionEditando] = useState<string>('');
+  const [fotoArchivoEditando, setFotoArchivoEditando] = useState<File | null>(null);
+  const [guardandoEdicion, setGuardandoEdicion] = useState<boolean>(false);
 
   const totalSemanas = 17;
 
@@ -241,6 +249,71 @@ export default function ActasSemanalesTab({
       alert("Hubo un error al subir o guardar la foto.");
     } finally {
       setSubiendoFoto(false);
+    }
+  };
+
+  const handleGuardarEdicionFoto = async (itemId: string, itemUrl: string, itemSemana: number, itemFecha: string) => {
+    if (!descripcionEditando.trim()) {
+      alert("Por favor escribe una descripción para la foto.");
+      return;
+    }
+
+    setGuardandoEdicion(true);
+    try {
+      let url = itemUrl;
+      if (fotoArchivoEditando) {
+        url = await subirImagenAFirebase(fotoArchivoEditando, 'evidencias');
+      }
+
+      const regOriginal = registros.find((r) => r.id === itemId);
+      const regActualizado: RegistroSemanal = {
+        ...(regOriginal || {
+          id: itemId,
+          aulaId: '',
+          semana: itemSemana,
+          fecha: itemFecha,
+          kgPlastico: 0,
+          kgAluminio: 0,
+          kgPapel: 0,
+          multiplicadorVerde: false,
+          montoVentaSoles: 0,
+        }),
+        id: itemId,
+        fotoEvidenciaUrl: url,
+        descripcionEvidencia: descripcionEditando.trim(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (onGuardarRegistro) {
+        await onGuardarRegistro(regActualizado);
+      }
+
+      setFotoEditandoId(null);
+      setFotoArchivoEditando(null);
+      setDescripcionEditando('');
+    } catch (error) {
+      console.error("Error al guardar la edición de evidencia:", error);
+      alert("Hubo un error al guardar los cambios de la evidencia.");
+    } finally {
+      setGuardandoEdicion(false);
+    }
+  };
+
+  const handleEliminarEvidencia = async (itemId: string) => {
+    if (window.confirm("¿Seguro que quieres eliminar esta evidencia?")) {
+      try {
+        if (onEliminarRegistro) {
+          await onEliminarRegistro(itemId);
+        } else {
+          await eliminarRegistro(itemId);
+        }
+        if (onEliminarReaccionFoto) {
+          await onEliminarReaccionFoto(itemId);
+        }
+      } catch (error) {
+        console.error("Error al eliminar la evidencia:", error);
+        alert("Hubo un error al eliminar la evidencia.");
+      }
     }
   };
 
@@ -598,6 +671,107 @@ export default function ActasSemanalesTab({
                   ];
                   const angleClass = rotationAngles[idx % rotationAngles.length];
 
+                  if (fotoEditandoId === item.id) {
+                    return (
+                      <div
+                        key={item.id}
+                        className={`relative bg-white p-3.5 shadow-md flex flex-col border-2 border-emerald-500 rounded-xl space-y-3 z-30 ${angleClass}`}
+                      >
+                        <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                          <span className="text-[10px] font-mono text-emerald-800 font-extrabold uppercase">
+                            Editar Evidencia (Rep. {item.semana})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFotoEditandoId(null);
+                              setFotoArchivoEditando(null);
+                            }}
+                            className="text-stone-400 hover:text-stone-600 p-0.5 rounded cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Image Preview / Replacement */}
+                        <div className="space-y-1">
+                          <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                            Imagen / Reemplazar (Opcional):
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={fotoArchivoEditando ? URL.createObjectURL(fotoArchivoEditando) : item.url}
+                              alt="Vista previa"
+                              className="w-16 h-12 object-cover rounded border border-stone-200 shrink-0"
+                            />
+                            <div className="relative flex-1 border border-dashed border-stone-300 rounded-lg p-2 text-center hover:bg-stone-50 cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    setFotoArchivoEditando(e.target.files[0]);
+                                  }
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                              <span className="text-[10px] text-stone-600 font-semibold block truncate">
+                                {fotoArchivoEditando ? fotoArchivoEditando.name : 'Cambiar foto...'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Description input */}
+                        <div className="space-y-1">
+                          <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                            Descripción / Comentario:
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={descripcionEditando}
+                            onChange={(e) => setDescripcionEditando(e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                            required
+                          />
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center justify-end space-x-2 pt-1">
+                          <button
+                            type="button"
+                            disabled={guardandoEdicion}
+                            onClick={() => {
+                              setFotoEditandoId(null);
+                              setFotoArchivoEditando(null);
+                            }}
+                            className="px-2.5 py-1 text-[10px] font-mono font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition cursor-pointer"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={guardandoEdicion}
+                            onClick={() => handleGuardarEdicionFoto(item.id, item.url, item.semana, item.fecha)}
+                            className="px-3 py-1 text-[10px] font-mono font-black text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 rounded-lg transition cursor-pointer flex items-center space-x-1"
+                          >
+                            {guardandoEdicion ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <span>Guardando...</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>Guardar</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
                       key={item.id}
@@ -630,33 +804,63 @@ export default function ActasSemanalesTab({
                           </p>
                         </div>
 
-                        {/* Interactive reaction buttons */}
-                        <div className="flex items-center space-x-2 pt-2 mt-3 border-t border-stone-100">
-                          <button
-                            type="button"
-                            onClick={() => handleReaccionarFoto(item.id, 'like')}
-                            className={`flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border transition duration-150 cursor-pointer select-none ${
-                              yaLeDioLike
-                                ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-2xs'
-                                : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200'
-                            }`}
-                          >
-                            <span>👍</span>
-                            <span>{likesCount}</span>
-                          </button>
+                        {/* Interactive reaction buttons and Admin controls */}
+                        <div className="flex items-center justify-between pt-2 mt-3 border-t border-stone-100 flex-wrap gap-1.5">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => handleReaccionarFoto(item.id, 'like')}
+                              className={`flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border transition duration-150 cursor-pointer select-none ${
+                                yaLeDioLike
+                                  ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-2xs'
+                                  : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200'
+                              }`}
+                            >
+                              <span>👍</span>
+                              <span>{likesCount}</span>
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => handleReaccionarFoto(item.id, 'dislike')}
-                            className={`flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border transition duration-150 cursor-pointer select-none ${
-                              yaLeDioDislike
-                                ? 'bg-red-600 text-white border-red-600 font-bold shadow-2xs'
-                                : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200'
-                            }`}
-                          >
-                            <span>👎</span>
-                            <span>{dislikesCount}</span>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReaccionarFoto(item.id, 'dislike')}
+                              className={`flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border transition duration-150 cursor-pointer select-none ${
+                                yaLeDioDislike
+                                  ? 'bg-red-600 text-white border-red-600 font-bold shadow-2xs'
+                                  : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border-stone-200'
+                              }`}
+                            >
+                              <span>👎</span>
+                              <span>{dislikesCount}</span>
+                            </button>
+                          </div>
+
+                          {rolActual === 'ADMIN' && (
+                            <div className="flex items-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFotoEditandoId(item.id);
+                                  setDescripcionEditando(item.caption);
+                                  setFotoArchivoEditando(null);
+                                }}
+                                className="flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200 font-bold transition duration-150 cursor-pointer select-none"
+                                title="Editar evidencia"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                                <span>Editar</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleEliminarEvidencia(item.id)}
+                                className="flex items-center space-x-1 text-[10px] font-mono px-2 py-0.5 rounded border bg-red-50 hover:bg-red-100 text-red-700 border-red-200 font-bold transition duration-150 cursor-pointer select-none"
+                                title="Eliminar evidencia"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Eliminar</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

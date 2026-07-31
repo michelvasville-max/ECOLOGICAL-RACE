@@ -443,6 +443,10 @@ export async function vaciarColeccionesDePrueba() {
   }
 }
 
+export async function eliminarRegistro(id: string) {
+  await deleteDoc(doc(db, 'registros', id));
+}
+
 export async function eliminarAula(id: string) {
   await deleteDoc(doc(db, 'aulas', id));
   try {

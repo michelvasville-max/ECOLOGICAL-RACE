@@ -40,6 +40,7 @@ import {
   guardarInstitucion,
   guardarAula,
   guardarRegistro,
+  eliminarRegistro,
   guardarComentario,
   guardarMiembroEquipo,
   eliminarMiembroEquipo,
@@ -1013,6 +1014,7 @@ export default function App() {
                 onEditarRegistro={handleEditarRegistroTrigger}
                 onNuevoRegistro={handleNuevoRegistroTrigger}
                 onGuardarRegistro={guardarRegistro}
+                onEliminarRegistro={eliminarRegistro}
                 usuarioGoogle={usuarioGoogle}
                 reaccionesFotos={reaccionesFotos}
                 onGuardarReaccionFoto={guardarReaccionFoto}

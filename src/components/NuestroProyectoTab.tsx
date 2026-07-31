@@ -534,26 +534,35 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               </div>
             ) : (
               <div className="space-y-3.5 text-xs font-mono">
-                <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+                <motion.div 
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-white rounded-xl p-4 border border-cyan-150/70 hover:border-cyan-400 flex items-start gap-3 shadow-2xs transition-all duration-300"
+                >
                   <BookOpen className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Categoría Oficial</span>
                     <span className="text-cyan-950 font-bold text-xs tracking-tight">{metadata.categoria}</span>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+                <motion.div 
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-white rounded-xl p-4 border border-cyan-150/70 hover:border-cyan-400 flex items-start gap-3 shadow-2xs transition-all duration-300"
+                >
                   <Landmark className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Institución Co-Gestora Base</span>
                     <span className="text-cyan-950 font-bold text-xs tracking-tight">{metadata.institucionBase}</span>
                   </div>
-                </div>
+                </motion.div>
               </div>
             )}
 
             {/* UNIFIED ADVISOR COMPONENT (READ ONLY / AUTO CALC FROM TEAM) */}
-            <div className="bg-white rounded-xl p-4 border border-cyan-150/70 flex items-start gap-3 shadow-2xs">
+            <motion.div 
+              whileHover={{ y: -5, scale: 1.02 }}
+              className="bg-white rounded-xl p-4 border border-cyan-150/70 hover:border-cyan-400 flex items-start gap-3 shadow-2xs transition-all duration-300"
+            >
               <ShieldCheck className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <span className="text-cyan-800/70 block uppercase text-[8px] font-bold">Asesora Oficial COAR</span>
@@ -561,7 +570,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   {nombreAsesora}
                 </span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -636,12 +645,15 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   placeholder="Ej. 1500"
                 />
               ) : (
-                <div className="bg-white rounded-xl p-3 border border-cyan-150/70 flex items-center justify-between shadow-2xs">
+                <motion.div 
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-white rounded-xl p-3 border border-cyan-150/70 hover:border-cyan-400 flex items-center justify-between shadow-2xs transition-all duration-300"
+                >
                   <span className="text-xs font-mono font-bold text-cyan-800/80">Meta Global de Respaldo:</span>
                   <span className="text-sm font-mono font-black text-cyan-600">
                     {(metadata.metaGlobalCO2 || 1500).toFixed(0)} kg CO₂
                   </span>
-                </div>
+                </motion.div>
               )}
             </div>
 
@@ -782,7 +794,11 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               ) : (
                 <div className="space-y-2.5">
                   {obtenerRedesSociales(metadata).map((red) => (
-                    <div key={red.id || red.nombre} className="border border-cyan-150 rounded-xl p-3 bg-white shadow-2xs flex items-center justify-between">
+                    <motion.div 
+                      key={red.id || red.nombre}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="border border-cyan-150 hover:border-cyan-400 rounded-xl p-3 bg-white shadow-2xs flex items-center justify-between transition-all duration-300"
+                    >
                       <div className="flex items-center space-x-2.5 min-w-0 pr-2">
                         <div className="w-8 h-8 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center text-cyan-700 shrink-0">
                           {renderSocialIcon(red.icono || red.nombre, 'w-4 h-4')}
@@ -805,7 +821,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                         <span>Visitar</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
