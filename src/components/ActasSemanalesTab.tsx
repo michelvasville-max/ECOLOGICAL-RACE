@@ -41,11 +41,9 @@ interface ItemGaleria {
 
 const formatFechaSencilla = (fechaStr: string) => {
   try {
-    const d = new Date(fechaStr);
-    if (isNaN(d.getTime())) return fechaStr;
-    const dia = String(d.getDate()).padStart(2, '0');
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const anio = d.getFullYear();
+    const soloFecha = fechaStr.split('T')[0];
+    const [anio, mes, dia] = soloFecha.split('-');
+    if (!anio || !mes || !dia) return fechaStr;
     return `${dia}/${mes}/${anio}`;
   } catch {
     return fechaStr;
