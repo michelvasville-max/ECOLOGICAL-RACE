@@ -16,7 +16,7 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
 import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto, Aliado, Actividad } from '../types';
@@ -38,8 +38,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Inicializamos Firestore usando la base de datos "(default)" estándar
-export const db = getFirestore(app);
+// Inicializamos Firestore usando la base de datos "(default)" estándar con detección de long polling para entornos iFrame/Sandbox
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 

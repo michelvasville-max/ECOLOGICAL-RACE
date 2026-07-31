@@ -85,10 +85,10 @@ export default function ActasSemanalesTab({
   const [subiendoFoto, setSubiendoFoto] = useState(false);
 
   // Estados para edición de fotos del mosaico
-  const [semanaFoto, setSemanaFoto] = useState<number>(5);
+  const [semanaFoto, setSemanaFoto] = useState<number>(0);
   const [filtroMosaicoSemana, setFiltroMosaicoSemana] = useState<string>('all');
   const [fotoEditandoId, setFotoEditandoId] = useState<string | null>(null);
-  const [semanaEditando, setSemanaEditando] = useState<number>(1);
+  const [semanaEditando, setSemanaEditando] = useState<number>(0);
   const [tituloEditando, setTituloEditando] = useState<string>('');
   const [etiquetaEditando, setEtiquetaEditando] = useState<string>('');
   const [descripcionEditando, setDescripcionEditando] = useState<string>('');
@@ -293,9 +293,12 @@ export default function ActasSemanalesTab({
   // Sort chronological: Newest to oldest (recent first)
   itemsGaleria.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 
-  // Filter mosaic items if a specific report week is selected
+  // Filter mosaic items if a specific report week or unassigned is selected
   const itemsGaleriaFiltrados = itemsGaleria.filter((item) => {
     if (filtroMosaicoSemana === 'all') return true;
+    if (filtroMosaicoSemana === 'unassigned') {
+      return !item.semana || item.semana === 0;
+    }
     return item.semana === Number(filtroMosaicoSemana);
   });
 
@@ -382,7 +385,7 @@ export default function ActasSemanalesTab({
       const nuevoRegistroFoto: RegistroSemanal = {
         id: `foto-${Date.now()}`,
         aulaId: '',
-        semana: semanaFoto || semanaSeleccionada,
+        semana: semanaFoto || 0,
         fecha: fechaFoto || new Date().toISOString().split('T')[0],
         kgPlastico: 0,
         kgAluminio: 0,
@@ -404,6 +407,7 @@ export default function ActasSemanalesTab({
       setTituloFoto('');
       setEtiquetaFoto('');
       setDescripcionFoto('');
+      setSemanaFoto(0);
       setFechaFoto(new Date().toISOString().split('T')[0]);
       setFotoArchivo(null);
       setMostrarFormFoto(false);
@@ -437,7 +441,7 @@ export default function ActasSemanalesTab({
         ...(regOriginal || {
           id: itemId,
           aulaId: '',
-          semana: semanaEditando || itemSemana,
+          semana: semanaEditando || 0,
           kgPlastico: 0,
           kgAluminio: 0,
           kgPapel: 0,
@@ -445,7 +449,7 @@ export default function ActasSemanalesTab({
           montoVentaSoles: 0,
         }),
         id: itemId,
-        semana: semanaEditando || itemSemana,
+        semana: semanaEditando || 0,
         fecha: fechaEditando || regOriginal?.fecha || new Date().toISOString().split('T')[0],
         fotoEvidenciaUrl: url,
         fotoEvidenciaTipo,
@@ -718,7 +722,7 @@ export default function ActasSemanalesTab({
                 <button
                   type="button"
                   onClick={() => {
-                    setSemanaFoto(semanaSeleccionada);
+                    setSemanaFoto(0);
                     setMostrarFormFoto(!mostrarFormFoto);
                   }}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center space-x-1 cursor-pointer transition-all duration-200"
@@ -744,6 +748,7 @@ export default function ActasSemanalesTab({
                   className="bg-white border border-stone-200 rounded-md px-2 py-1 text-[11px] font-semibold text-stone-700 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
                 >
                   <option value="all">Todos los reportes</option>
+                  <option value="unassigned">Evidencias de ejecución</option>
                   {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                     <option key={s} value={String(s)}>
                       Reporte N.° {s}
@@ -827,6 +832,7 @@ export default function ActasSemanalesTab({
                         onChange={(e) => setSemanaFoto(Number(e.target.value))}
                         className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
                       >
+                        <option value={0}>Sin asignar</option>
                         {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                           <option key={s} value={s}>
                             Reporte N.° {s}
@@ -905,6 +911,8 @@ export default function ActasSemanalesTab({
                   <p className="text-xs text-stone-500 font-sans font-bold leading-relaxed">
                     {filtroMosaicoSemana === 'all'
                       ? 'Aún no hay evidencias cargadas. El Administrador puede agregar la primera foto o video.'
+                      : filtroMosaicoSemana === 'unassigned'
+                      ? 'No hay evidencias de ejecución (sin reporte asignado).'
                       : `No hay evidencias asociadas al Reporte N.° ${filtroMosaicoSemana}.`}
                   </p>
                 </div>
@@ -1017,6 +1025,7 @@ export default function ActasSemanalesTab({
                               onChange={(e) => setSemanaEditando(Number(e.target.value))}
                               className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 cursor-pointer"
                             >
+                              <option value={0}>Sin asignar</option>
                               {Array.from({ length: totalSemanas }, (_, i) => i + 1).map((s) => (
                                 <option key={s} value={s}>
                                   Reporte N.° {s}
@@ -1199,7 +1208,7 @@ export default function ActasSemanalesTab({
                                   setFotoEditandoId(item.id);
                                   setTituloEditando(item.titulo || '');
                                   setEtiquetaEditando(item.etiqueta || '');
-                                  setSemanaEditando(item.semana || semanaSeleccionada);
+                                  setSemanaEditando(item.semana || 0);
                                   setDescripcionEditando(item.caption);
                                   setFechaEditando(item.fecha ? item.fecha.split('T')[0] : new Date().toISOString().split('T')[0]);
                                   setFotoArchivoEditando(null);

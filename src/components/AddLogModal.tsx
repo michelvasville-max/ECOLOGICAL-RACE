@@ -32,6 +32,7 @@ export default function AddLogModal({
   const [montoVentaSoles, setMontoVentaSoles] = useState('');
   const [descripcionEvidencia, setDescripcionEvidencia] = useState('');
   const [fotoEvidenciaUrl, setFotoEvidenciaUrl] = useState('');
+  const [fotoEvidenciaTipo, setFotoEvidenciaTipo] = useState<'imagen' | 'video'>('imagen');
   const [uploading, setUploading] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -51,6 +52,7 @@ export default function AddLogModal({
       setMontoVentaSoles(String(registroParaEditar.montoVentaSoles));
       setDescripcionEvidencia(registroParaEditar.descripcionEvidencia || '');
       setFotoEvidenciaUrl(registroParaEditar.fotoEvidenciaUrl || '');
+      setFotoEvidenciaTipo(registroParaEditar.fotoEvidenciaTipo || 'imagen');
     } else {
       // Default blank values
       if (instituciones.length > 0) setInstitucionId(instituciones[0].id);
@@ -64,6 +66,7 @@ export default function AddLogModal({
       setMontoVentaSoles('');
       setDescripcionEvidencia('');
       setFotoEvidenciaUrl('');
+      setFotoEvidenciaTipo('imagen');
     }
   }, [registroParaEditar, isOpen, instituciones, aulas]);
 
@@ -105,12 +108,16 @@ export default function AddLogModal({
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    const esVideo = file.type.startsWith('video/');
+    const tipo: 'imagen' | 'video' = esVideo ? 'video' : 'imagen';
+    setFotoEvidenciaTipo(tipo);
+
     try {
       const url = await subirImagenAFirebase(file, 'evidencias');
       setFotoEvidenciaUrl(url);
     } catch (err) {
-      console.error("Error uploading evidence photo:", err);
-      alert("No se pudo subir la foto de evidencia. Intente nuevamente.");
+      console.error("Error uploading evidence file:", err);
+      alert("No se pudo subir el archivo de evidencia. Intente nuevamente.");
     } finally {
       setUploading(false);
     }
@@ -138,6 +145,7 @@ export default function AddLogModal({
       montoVentaSoles: Number(montoVentaSoles) || 0,
       descripcionEvidencia: descripcionEvidencia.trim(),
       fotoEvidenciaUrl: fotoEvidenciaUrl || '',
+      fotoEvidenciaTipo,
       updatedAt: new Date().toISOString(),
     };
 
@@ -335,9 +343,9 @@ export default function AddLogModal({
             />
           </div>
 
-          {/* Foto de Evidencia Upload */}
+          {/* Foto/Video de Evidencia Upload */}
           <div>
-            <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Foto de Evidencia (Galería)</label>
+            <label className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Evidencia Visual (Foto / Video)</label>
             <div
               className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition select-none ${
                 isDragActive
@@ -354,25 +362,33 @@ export default function AddLogModal({
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                accept="image/*"
+                accept="image/*,video/*"
                 className="hidden"
               />
               {uploading ? (
-                <div className="text-xs text-slate-500 font-mono animate-pulse">Subiendo imagen...</div>
+                <div className="text-xs text-slate-500 font-mono animate-pulse">Subiendo archivo...</div>
               ) : fotoEvidenciaUrl ? (
                 <div className="flex flex-col items-center">
-                  <img
-                    src={fotoEvidenciaUrl}
-                    alt="Vista previa de evidencia"
-                    className="w-full max-h-32 object-cover rounded-lg border border-emerald-500 mb-2"
-                  />
-                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">¡Cargada con éxito! Click para cambiar</span>
+                  {fotoEvidenciaTipo === 'video' ? (
+                    <video
+                      src={fotoEvidenciaUrl}
+                      controls
+                      className="w-full max-h-36 rounded-lg border border-emerald-500 mb-2 bg-black object-contain"
+                    />
+                  ) : (
+                    <img
+                      src={fotoEvidenciaUrl}
+                      alt="Vista previa de evidencia"
+                      className="w-full max-h-32 object-cover rounded-lg border border-emerald-500 mb-2"
+                    />
+                  )}
+                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">¡Cargado con éxito! Click para cambiar</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center py-2">
                   <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                  <span className="text-xs font-semibold text-slate-600">Arrastra una imagen o haz clic para subir</span>
-                  <span className="text-[9px] text-slate-400 font-mono">JPG, PNG (máx. 10MB)</span>
+                  <span className="text-xs font-semibold text-slate-600">Arrastra una imagen o video, o haz clic para subir</span>
+                  <span className="text-[9px] text-slate-400 font-mono">JPG, PNG, MP4, WEBM (máx. 10MB)</span>
                 </div>
               )}
             </div>
