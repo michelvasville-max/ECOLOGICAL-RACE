@@ -1263,11 +1263,16 @@ export default function App() {
               <ActividadesTab
                 actividades={actividades}
                 rolActual={rolActual}
+                metadata={proyectoMetadata}
                 onGuardarActividad={async (actividad) => {
                   await guardarActividad(actividad);
                 }}
                 onEliminarActividad={async (id) => {
                   await eliminarActividad(id);
+                }}
+                onGuardarMetadata={async (newMeta) => {
+                  setProyectoMetadata(newMeta);
+                  await guardarProyectoMetadata(newMeta);
                 }}
               />
             </motion.div>

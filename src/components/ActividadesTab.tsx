@@ -17,25 +17,63 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Actividad, RolUsuario } from '../types';
+import { ProyectoMetadata } from './NuestroProyectoTab';
 import { subirImagenAFirebase } from '../lib/firebase';
 
 interface ActividadesTabProps {
   actividades: Actividad[];
   rolActual: RolUsuario;
+  metadata?: ProyectoMetadata;
   onGuardarActividad: (actividad: Actividad) => Promise<void>;
   onEliminarActividad: (id: string) => Promise<void>;
+  onGuardarMetadata?: (metadata: ProyectoMetadata) => Promise<void>;
 }
 
 export default function ActividadesTab({
   actividades,
   rolActual,
+  metadata,
   onGuardarActividad,
   onEliminarActividad,
+  onGuardarMetadata,
 }: ActividadesTabProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [actividadEditando, setActividadEditando] = useState<Actividad | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const [subiendoHeaderImagen, setSubiendoHeaderImagen] = useState(false);
+
+  const handleHeaderImagenChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSubiendoHeaderImagen(true);
+      try {
+        const url = await subirImagenAFirebase(file, 'proyecto');
+        if (onGuardarMetadata) {
+          await onGuardarMetadata({
+            ...(metadata || {
+              logoUrl: '',
+              mision: '',
+              vision: '',
+              nombreProyecto: '',
+              categoria: '',
+              institucionBase: ''
+            }),
+            actividadesImagenUrl: url
+          });
+        }
+      } catch (err) {
+        console.error('Error al subir la imagen de actividades:', err);
+        alert('Ocurrió un error al subir la imagen.');
+      } finally {
+        setSubiendoHeaderImagen(false);
+      }
+    }
+  };
+
+  const imagenActividadesActual =
+    metadata?.actividadesImagenUrl ||
+    'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800';
 
   // Form State
   const [titulo, setTitulo] = useState('');
@@ -144,34 +182,70 @@ export default function ActividadesTab({
   return (
     <div className="space-y-8" id="actividades-container">
       {/* HEADER PRINCIPAL DE ACTIVIDADES */}
-      <div className="bg-emerald-950 border border-emerald-500/35 rounded-3xl p-6 md:p-8 shadow-[0_0_25px_rgba(16,185,129,0.12)] text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-emerald-900/80 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              <Tag className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Eventos & Convocatorias Ecológicas</span>
+      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_30px_rgba(16,185,129,0.2)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-6">
+          {/* Left Text Block */}
+          <div className="space-y-4 flex-1 min-w-0 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 bg-emerald-900/80 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <Tag className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Eventos & Convocatorias Ecológicas</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight font-display text-white">
+                Actividades del Proyecto
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans border-l-2 border-emerald-400/80 pl-4 py-1">
+                Participa en nuestras rifas pro-fondos, campañas de acopio masivo, talleres sostenibles y eventos especiales organizados por Ecological Race en beneficio de las instituciones educativas.
+              </p>
             </div>
-            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight font-display text-white">
-              Actividades del Proyecto
-            </h2>
-            <p className="text-xs md:text-sm text-slate-300 leading-relaxed font-sans">
-              Participa en nuestras rifas pro-fondos, campañas de acopio masivo, talleres sostenibles y eventos especiales organizados por Ecological Race en beneficio de las instituciones educativas.
-            </p>
+
+            {/* Botón Admin para Crear */}
+            {rolActual === 'ADMIN' && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={abrirModalCrear}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-mono font-black text-xs px-5 py-3 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all cursor-pointer flex items-center space-x-2 border border-emerald-300/50 uppercase tracking-wider w-fit"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Nueva Actividad</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Botón Admin para Crear */}
-          {rolActual === 'ADMIN' && (
-            <div className="shrink-0">
-              <button
-                onClick={abrirModalCrear}
-                className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-mono font-black text-xs px-5 py-3 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transition-all cursor-pointer flex items-center space-x-2 border border-emerald-300/50 uppercase tracking-wider"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Nueva Actividad</span>
-              </button>
+          {/* Right Illustrative Image Block (Aspect 2:1) */}
+          <div className="w-full lg:w-80 xl:w-96 aspect-[2/1] shrink-0 relative group rounded-2xl overflow-hidden border border-emerald-500/40 bg-slate-950 shadow-md flex items-center justify-center">
+            <img
+              src={imagenActividadesActual}
+              alt="Actividades del Proyecto"
+              className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+            />
+
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-3 left-3 text-emerald-300 text-[10px] font-mono bg-slate-950/80 border border-emerald-500/30 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider font-bold">
+              Ilustración Actividades
             </div>
-          )}
+
+            {rolActual === 'ADMIN' && (
+              <label className="absolute inset-0 bg-slate-950/85 text-white flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer p-4 z-20">
+                <Upload className="w-6 h-6 text-emerald-400" />
+                <span className="text-xs font-mono font-bold tracking-wider text-emerald-300 text-center">
+                  {subiendoHeaderImagen ? 'CARGANDO...' : 'REEMPLAZAR IMAGEN'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleHeaderImagenChange}
+                  className="hidden"
+                  disabled={subiendoHeaderImagen}
+                />
+              </label>
+            )}
+          </div>
         </div>
       </div>
 
@@ -208,14 +282,15 @@ export default function ActividadesTab({
                 layout
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-white border rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 relative group shadow-sm hover:shadow-md ${
+                whileHover={{ y: -5, scale: 1.02 }}
+                className={`rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 relative group shadow-sm ${
                   esActiva
-                    ? 'border-emerald-300 shadow-[0_4px_20px_rgba(16,185,129,0.08)]'
-                    : 'border-slate-200 opacity-90 grayscale-[20%] hover:grayscale-0'
+                    ? 'bg-gradient-to-b from-amber-50 via-amber-100/40 to-amber-50 border-2 border-amber-400/90 hover:border-amber-500 shadow-[0_4px_20px_rgba(245,158,11,0.12)] hover:shadow-[0_10px_30px_rgba(245,158,11,0.25)]'
+                    : 'bg-amber-50/80 border border-amber-300/70 opacity-90 grayscale-[15%] hover:grayscale-0 hover:border-amber-400 hover:shadow-md'
                 }`}
               >
                 {/* Badge de Estado e Imagen */}
-                <div className="relative w-full h-52 bg-slate-100 overflow-hidden shrink-0">
+                <div className="relative w-full h-52 bg-amber-100/60 overflow-hidden shrink-0">
                   {act.imagenUrl ? (
                     <img
                       src={act.imagenUrl}
@@ -223,16 +298,16 @@ export default function ActividadesTab({
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-900 to-emerald-950 text-white p-4 text-center">
-                      <Sparkles className="w-10 h-10 text-emerald-400 mb-2 opacity-80" />
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-200">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900 via-amber-950 to-emerald-950 text-white p-4 text-center">
+                      <Sparkles className="w-10 h-10 text-amber-400 mb-2 opacity-90" />
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-200">
                         {act.titulo}
                       </span>
                     </div>
                   )}
 
                   {/* Gradient Overlay for Text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent pointer-events-none" />
 
                   {/* Status Badge */}
                   <div className="absolute top-3 left-3 z-10">
@@ -275,8 +350,8 @@ export default function ActividadesTab({
                   <div className="space-y-2.5">
                     {/* Dates */}
                     {(act.fechaInicio || act.fechaFin) && (
-                      <div className="flex items-center text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
-                        <Calendar className="w-3.5 h-3.5 mr-1.5 text-emerald-600 shrink-0" />
+                      <div className="flex items-center text-[11px] font-mono font-bold text-amber-950 bg-amber-100/90 px-2.5 py-1 rounded-lg border border-amber-300/80 w-fit shadow-xs">
+                        <Calendar className="w-3.5 h-3.5 mr-1.5 text-amber-700 shrink-0" />
                         <span>
                           {act.fechaInicio ? `Del ${act.fechaInicio}` : ''}
                           {act.fechaFin ? ` al ${act.fechaFin}` : ''}
@@ -285,36 +360,36 @@ export default function ActividadesTab({
                     )}
 
                     {/* Title */}
-                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-snug font-display">
+                    <h3 className="text-lg font-black text-amber-950 uppercase tracking-tight leading-snug font-display">
                       {act.titulo}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans whitespace-pre-line line-clamp-4">
+                    <p className="text-xs text-amber-900/90 leading-relaxed font-sans font-medium whitespace-pre-line line-clamp-4">
                       {act.descripcion}
                     </p>
                   </div>
 
                   {/* Action Button */}
-                  <div className="pt-2 border-t border-slate-100">
+                  <div className="pt-2 border-t border-amber-200/80">
                     {esActiva ? (
                       act.enlaceAccion ? (
                         <a
                           href={act.enlaceAccion}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2 text-center uppercase tracking-wider"
+                          className="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-mono font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2 text-center uppercase tracking-wider border border-emerald-500/30"
                         >
                           <span>{act.textoBotonAccion || 'Participar / Más Información'}</span>
                           <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         </a>
                       ) : (
-                        <div className="w-full bg-emerald-50 text-emerald-800 font-mono font-bold text-xs px-4 py-2.5 rounded-xl border border-emerald-200 text-center uppercase tracking-wider">
+                        <div className="w-full bg-amber-100/90 text-amber-950 font-mono font-bold text-xs px-4 py-2.5 rounded-xl border border-amber-300/80 text-center uppercase tracking-wider">
                           <span>{act.textoBotonAccion || 'Actividad En Curso'}</span>
                         </div>
                       )
                     ) : (
-                      <div className="w-full bg-slate-100 text-slate-400 font-mono font-bold text-xs px-4 py-2.5 rounded-xl border border-slate-200 text-center cursor-not-allowed uppercase tracking-wider flex items-center justify-center space-x-1.5">
+                      <div className="w-full bg-amber-200/40 text-amber-900/60 font-mono font-bold text-xs px-4 py-2.5 rounded-xl border border-amber-300/50 text-center cursor-not-allowed uppercase tracking-wider flex items-center justify-center space-x-1.5">
                         <Clock className="w-3.5 h-3.5" />
                         <span>Actividad Finalizada</span>
                       </div>

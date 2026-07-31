@@ -86,7 +86,8 @@
         "categoria": { "type": "string" },
         "institucionBase": { "type": "string" },
         "asesoraOficial": { "type": "string" },
-        "duracion": { "type": "string" }
+        "duracion": { "type": "string" },
+        "actividadesImagenUrl": { "type": "string" }
       },
       "required": ["mision", "vision", "nombreProyecto", "categoria", "institucionBase", "asesoraOficial", "duracion"]
     },

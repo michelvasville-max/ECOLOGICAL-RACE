@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 declare global {
@@ -137,15 +137,20 @@ interface MediaSliderProps {
 
 function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const ytPlayerRef = useRef<any>(null);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % evidencias.length);
-  };
+  }, [evidencias.length]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + evidencias.length) % evidencias.length);
-  };
+  }, [evidencias.length]);
+
+  const handleNextRef = useRef(handleNext);
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
 
   // 1. Timer for photos and non-embedded video link cards
   useEffect(() => {
@@ -169,43 +174,45 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
     }, 4500);
 
     return () => clearInterval(timer);
-  }, [currentIndex, evidencias]);
+  }, [currentIndex, evidencias, handleNext]);
 
-  // 2. YouTube API / postMessage listener to advance when YouTube video ends
+  // 2. Global postMessage listener to advance when YouTube video ends
   useEffect(() => {
-    if (!evidencias || evidencias.length <= 1) return;
-
-    const active = evidencias[currentIndex >= evidencias.length ? 0 : currentIndex];
-    if (!active) return;
-
-    const isVideoUrl = active.tipo === 'youtube' || active.tipo === 'video_url';
-    const vInfo = isVideoUrl && active.url ? getVideoInfo(active.url) : null;
-    const isYouTubeEmbed = isVideoUrl && vInfo?.isEmbeddable && vInfo.platformName === 'YouTube';
-
-    if (!isYouTubeEmbed) return;
-
     const handleMessage = (e: MessageEvent) => {
       try {
         if (typeof e.data === 'string') {
           const data = JSON.parse(e.data);
           if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
-            handleNext();
+            handleNextRef.current();
           }
         }
       } catch (err) {}
     };
     window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
-    let ytPlayer: any = null;
+  // 3. Callback ref for iframe: initializes YouTube player as soon as iframe mounts in DOM
+  const iframeCallbackRef = useCallback((node: HTMLIFrameElement | null) => {
+    if (ytPlayerRef.current) {
+      try {
+        if (typeof ytPlayerRef.current.destroy === 'function') {
+          ytPlayerRef.current.destroy();
+        }
+      } catch (e) {}
+      ytPlayerRef.current = null;
+    }
 
-    const initYTPlayer = () => {
-      if (window.YT && window.YT.Player && iframeRef.current) {
+    if (!node) return;
+
+    const setupYTPlayer = () => {
+      if (window.YT && window.YT.Player) {
         try {
-          ytPlayer = new window.YT.Player(iframeRef.current, {
+          ytPlayerRef.current = new window.YT.Player(node, {
             events: {
               onStateChange: (event: any) => {
                 if (event.data === 0) { // 0 = YT.PlayerState.ENDED
-                  handleNext();
+                  handleNextRef.current();
                 }
               }
             }
@@ -215,7 +222,7 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
     };
 
     if (window.YT && window.YT.Player) {
-      initYTPlayer();
+      setupYTPlayer();
     } else {
       if (!document.getElementById('youtube-iframe-api-script')) {
         const tag = document.createElement('script');
@@ -226,19 +233,10 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
       const prevOnReady = window.onYouTubeIframeAPIReady;
       window.onYouTubeIframeAPIReady = () => {
         if (typeof prevOnReady === 'function') prevOnReady();
-        initYTPlayer();
+        setupYTPlayer();
       };
     }
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-      if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-        try {
-          ytPlayer.destroy();
-        } catch (e) {}
-      }
-    };
-  }, [currentIndex, evidencias]);
+  }, []);
 
   if (!evidencias || evidencias.length === 0) {
     return (
@@ -271,7 +269,7 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
             {isVideoUrl && (
               videoInfo?.isEmbeddable && videoInfo.embedUrl ? (
                 <iframe
-                  ref={iframeRef}
+                  ref={iframeCallbackRef}
                   src={videoInfo.embedUrl}
                   title={`Evidencia ${activeIndex + 1} de ${nombreAliado}`}
                   className="w-full h-full"
