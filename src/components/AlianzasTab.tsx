@@ -138,6 +138,12 @@ interface MediaSliderProps {
 function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const ytPlayerRef = useRef<any>(null);
+  const hasEndedRef = useRef(false);
+
+  // Reset the video ended guard whenever the active slide changes
+  useEffect(() => {
+    hasEndedRef.current = false;
+  }, [currentIndex]);
 
   const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % evidencias.length);
@@ -151,6 +157,13 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
   useEffect(() => {
     handleNextRef.current = handleNext;
   }, [handleNext]);
+
+  const triggerAdvanceOnEnded = useCallback(() => {
+    if (!hasEndedRef.current) {
+      hasEndedRef.current = true;
+      handleNextRef.current();
+    }
+  }, []);
 
   // 1. Timer for photos and non-embedded video link cards
   useEffect(() => {
@@ -183,14 +196,14 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
         if (typeof e.data === 'string') {
           const data = JSON.parse(e.data);
           if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
-            handleNextRef.current();
+            triggerAdvanceOnEnded();
           }
         }
       } catch (err) {}
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [triggerAdvanceOnEnded]);
 
   // 3. Callback ref for iframe: initializes YouTube player as soon as iframe mounts in DOM
   const iframeCallbackRef = useCallback((node: HTMLIFrameElement | null) => {
@@ -212,7 +225,7 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
             events: {
               onStateChange: (event: any) => {
                 if (event.data === 0) { // 0 = YT.PlayerState.ENDED
-                  handleNextRef.current();
+                  triggerAdvanceOnEnded();
                 }
               }
             }
