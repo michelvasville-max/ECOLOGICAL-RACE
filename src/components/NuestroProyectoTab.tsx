@@ -1,7 +1,32 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Heart, Globe, Landmark, Edit, Save, X, Image as ImageIcon, Sparkles, BookOpen, Target, Upload, Leaf, Flame, Zap, Droplet, FileText } from 'lucide-react';
+import { ShieldCheck, Heart, Globe, Landmark, Edit, Save, X, Image as ImageIcon, Sparkles, BookOpen, Target, Upload, Leaf, Flame, Zap, Droplet, FileText, Trash2, Plus, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import { IntegranteEquipo } from '../types';
+
+export interface RedSocial {
+  id: string;
+  nombre: string;
+  icono: string;
+  usuario: string;
+  url: string;
+}
+
+export const DEFAULT_REDES_SOCIALES: RedSocial[] = [
+  {
+    id: 'tiktok-default',
+    nombre: 'TikTok',
+    icono: 'tiktok',
+    usuario: '@ecologicalrace',
+    url: 'https://www.tiktok.com/@ecologicalrace'
+  },
+  {
+    id: 'instagram-default',
+    nombre: 'Instagram',
+    icono: 'instagram',
+    usuario: '@ecologicalrace',
+    url: 'https://www.instagram.com/ecologicalrace'
+  }
+];
 
 export interface ProyectoMetadata {
   id?: string;
@@ -19,6 +44,86 @@ export interface ProyectoMetadata {
   tiktokUrl?: string;
   instagramUser?: string;
   instagramUrl?: string;
+  redesSociales?: RedSocial[];
+}
+
+export function obtenerRedesSociales(metadata?: ProyectoMetadata | null): RedSocial[] {
+  if (!metadata) return DEFAULT_REDES_SOCIALES;
+  if (metadata.redesSociales && metadata.redesSociales.length > 0) {
+    return metadata.redesSociales;
+  }
+  const result: RedSocial[] = [];
+  if (metadata.tiktokUser || metadata.tiktokUrl) {
+    result.push({
+      id: 'tiktok-fallback',
+      nombre: 'TikTok',
+      icono: 'tiktok',
+      usuario: metadata.tiktokUser || '@ecologicalrace',
+      url: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace'
+    });
+  }
+  if (metadata.instagramUser || metadata.instagramUrl) {
+    result.push({
+      id: 'instagram-fallback',
+      nombre: 'Instagram',
+      icono: 'instagram',
+      usuario: metadata.instagramUser || '@ecologicalrace',
+      url: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
+    });
+  }
+  if (result.length === 0) {
+    return DEFAULT_REDES_SOCIALES;
+  }
+  return result;
+}
+
+export function renderSocialIcon(icono: string = '', className: string = 'w-4 h-4') {
+  const norm = (icono || '').toLowerCase();
+  if (norm.includes('tiktok')) {
+    return (
+      <svg className={`${className} fill-current`} viewBox="0 0 24 24">
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.43-.17-.11-.32-.23-.48-.36v7.24c0 1.27-.31 2.56-.93 3.65-1.16 2.05-3.5 3.34-5.85 3.17-2.73-.08-5.22-2.12-5.75-4.8-.62-2.78.71-5.86 3.19-7.1 1.02-.53 2.19-.74 3.34-.64V13.8c-.89-.13-1.85.08-2.58.63-.8.56-1.21 1.58-1.07 2.54.14.99.98 1.8 1.96 1.89 1.15.11 2.27-.64 2.54-1.74.07-.3.09-.6.09-.9V0h1.88z" />
+      </svg>
+    );
+  }
+  if (norm.includes('instagram')) {
+    return (
+      <svg className={`${className} fill-none stroke-current stroke-2`} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+      </svg>
+    );
+  }
+  if (norm.includes('facebook')) {
+    return (
+      <svg className={`${className} fill-current`} viewBox="0 0 24 24">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    );
+  }
+  if (norm.includes('youtube')) {
+    return (
+      <svg className={`${className} fill-current`} viewBox="0 0 24 24">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    );
+  }
+  if (norm.includes('x') || norm.includes('twitter')) {
+    return (
+      <svg className={`${className} fill-current`} viewBox="0 0 24 24">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    );
+  }
+  if (norm.includes('whatsapp')) {
+    return (
+      <svg className={`${className} fill-current`} viewBox="0 0 24 24">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99 0-3.951-.5-5.688-1.448l-6.205 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+      </svg>
+    );
+  }
+  return <Globe className={className} />;
 }
 
 interface Props {
@@ -40,10 +145,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
     metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
     imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
     imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-    tiktokUser: metadata.tiktokUser || '@ecologicalrace',
-    tiktokUrl: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace',
-    instagramUser: metadata.instagramUser || '@ecologicalrace',
-    instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
+    redesSociales: obtenerRedesSociales(metadata)
   });
 
   React.useEffect(() => {
@@ -52,10 +154,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
       metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
       imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
       imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-      tiktokUser: metadata.tiktokUser || '@ecologicalrace',
-      tiktokUrl: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace',
-      instagramUser: metadata.instagramUser || '@ecologicalrace',
-      instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
+      redesSociales: obtenerRedesSociales(metadata)
     });
   }, [metadata]);
 
@@ -422,16 +521,58 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
         {/* Card B: Global Carbon Goal & Social Networks (All Editable) */}
         <div className="bg-cyan-50/40 border border-cyan-200/80 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(6,182,212,0.05)] space-y-6">
-          <div className="flex items-center justify-between border-b border-cyan-150 pb-4">
+          <div className="flex items-center justify-between border-b border-cyan-150 pb-4 flex-wrap gap-2">
             <div className="flex items-center space-x-2">
               <Target className="w-5 h-5 text-cyan-600" />
               <h3 className="font-display font-black text-cyan-950 text-sm uppercase tracking-tight">
                 Metas y Canales Oficiales
               </h3>
             </div>
-            <span className="text-[10px] font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-extrabold uppercase border border-teal-200">
-              Admin
-            </span>
+            <div className="flex items-center space-x-2">
+              {rolActual === 'ADMIN' && (
+                !isEditing ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditedData({
+                        ...metadata,
+                        metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
+                        imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
+                        imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
+                        redesSociales: obtenerRedesSociales(metadata)
+                      });
+                      setIsEditing(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-700 text-white font-mono text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm cursor-pointer transition"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                    <span>Editar</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm cursor-pointer transition"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Guardar</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="inline-flex items-center gap-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-mono text-[11px] font-bold px-2.5 py-1.5 rounded-xl cursor-pointer transition"
+                      title="Cancelar cambios"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )
+              )}
+              <span className="text-[10px] font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-extrabold uppercase border border-teal-200">
+                Admin
+              </span>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -458,104 +599,172 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
               )}
             </div>
 
-            {/* TikTok Config */}
-            <div className="border border-cyan-150 rounded-xl p-3.5 space-y-3 bg-white shadow-2xs">
-              <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 text-cyan-700 fill-current" viewBox="0 0 24 24">
-                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.43-.17-.11-.32-.23-.48-.36v7.24c0 1.27-.31 2.56-.93 3.65-1.16 2.05-3.5 3.34-5.85 3.17-2.73-.08-5.22-2.12-5.75-4.8-.62-2.78.71-5.86 3.19-7.1 1.02-.53 2.19-.74 3.34-.64V13.8c-.89-.13-1.85.08-2.58.63-.8.56-1.21 1.58-1.07 2.54.14.99.98 1.8 1.96 1.89 1.15.11 2.27-.64 2.54-1.74.07-.3.09-.6.09-.9V0h1.88z" />
-                </svg>
-                <span className="text-[10px] font-mono font-bold uppercase text-cyan-800">TikTok del Proyecto</span>
+            {/* Dynamic Social Networks List */}
+            <div className="space-y-3 pt-2 border-t border-cyan-150">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase text-cyan-900">
+                  Canales Oficiales y Redes Sociales
+                </span>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentList = editedData.redesSociales || obtenerRedesSociales(metadata);
+                      const nuevaRed: RedSocial = {
+                        id: `red-${Date.now()}`,
+                        nombre: 'Facebook',
+                        icono: 'facebook',
+                        usuario: '@ecologicalrace',
+                        url: 'https://facebook.com/ecologicalrace'
+                      };
+                      setEditedData((prev) => ({
+                        ...prev,
+                        redesSociales: [...currentList, nuevaRed]
+                      }));
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 rounded-lg transition cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Agregar Red</span>
+                  </button>
+                )}
               </div>
 
               {isEditing ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Usuario</label>
-                    <input
-                      type="text"
-                      value={editedData.tiktokUser || ''}
-                      onChange={(e) => setEditedData((prev) => ({ ...prev, tiktokUser: e.target.value }))}
-                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
-                      placeholder="@ecologicalrace"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">URL Directa</label>
-                    <input
-                      type="text"
-                      value={editedData.tiktokUrl || ''}
-                      onChange={(e) => setEditedData((prev) => ({ ...prev, tiktokUrl: e.target.value }))}
-                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
-                      placeholder="https://tiktok.com/@..."
-                    />
-                  </div>
+                <div className="space-y-3">
+                  {(editedData.redesSociales || obtenerRedesSociales(metadata)).map((red, idx) => (
+                    <div key={red.id || idx} className="border border-cyan-200 rounded-xl p-3.5 space-y-3 bg-white shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-cyan-700">
+                            {renderSocialIcon(red.icono || red.nombre, 'w-4 h-4')}
+                          </span>
+                          <span className="text-[10px] font-mono font-bold uppercase text-cyan-800">
+                            Red #{idx + 1}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentList = editedData.redesSociales || obtenerRedesSociales(metadata);
+                            const updated = currentList.filter((_, i) => i !== idx);
+                            setEditedData((prev) => ({ ...prev, redesSociales: updated }));
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition cursor-pointer"
+                          title="Eliminar red social"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Nombre Red</label>
+                          <input
+                            type="text"
+                            value={red.nombre}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.redesSociales || obtenerRedesSociales(metadata))];
+                              currentList[idx] = { ...currentList[idx], nombre: e.target.value };
+                              setEditedData((prev) => ({ ...prev, redesSociales: currentList }));
+                            }}
+                            className="w-full bg-white border border-cyan-200 rounded-lg p-1.5 text-slate-800 font-sans focus:outline-cyan-400 text-xs"
+                            placeholder="Ej. Facebook"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Tipo / Ícono</label>
+                          <select
+                            value={red.icono || 'globe'}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.redesSociales || obtenerRedesSociales(metadata))];
+                              currentList[idx] = { ...currentList[idx], icono: e.target.value };
+                              setEditedData((prev) => ({ ...prev, redesSociales: currentList }));
+                            }}
+                            className="w-full bg-white border border-cyan-200 rounded-lg p-1.5 text-slate-800 font-sans focus:outline-cyan-400 text-xs"
+                          >
+                            <option value="tiktok">TikTok</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="x">X / Twitter</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="globe">Web / Sitio</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Usuario / Identificador</label>
+                          <input
+                            type="text"
+                            value={red.usuario}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.redesSociales || obtenerRedesSociales(metadata))];
+                              currentList[idx] = { ...currentList[idx], usuario: e.target.value };
+                              setEditedData((prev) => ({ ...prev, redesSociales: currentList }));
+                            }}
+                            className="w-full bg-white border border-cyan-200 rounded-lg p-1.5 text-slate-800 font-sans focus:outline-cyan-400 text-xs"
+                            placeholder="Ej. @ecologicalrace"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Enlace URL</label>
+                          <input
+                            type="text"
+                            value={red.url}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.redesSociales || obtenerRedesSociales(metadata))];
+                              currentList[idx] = { ...currentList[idx], url: e.target.value };
+                              setEditedData((prev) => ({ ...prev, redesSociales: currentList }));
+                            }}
+                            className="w-full bg-white border border-cyan-200 rounded-lg p-1.5 text-slate-800 font-sans focus:outline-cyan-400 text-xs"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!editedData.redesSociales || editedData.redesSociales.length === 0) && (
+                    <p className="text-xs text-slate-400 font-mono text-center py-2">
+                      No hay redes sociales configuradas. Haz clic en "Agregar Red".
+                    </p>
+                  )}
                 </div>
               ) : (
-                <div className="text-xs font-mono space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-cyan-800/60">Usuario:</span>
-                    <span className="text-cyan-950 font-bold">{metadata.tiktokUser || '@ecologicalrace'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-cyan-800/60">Enlace:</span>
-                    <a href={metadata.tiktokUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline truncate max-w-[200px]">
-                      {metadata.tiktokUrl || 'No definido'}
-                    </a>
-                  </div>
+                <div className="space-y-2.5">
+                  {obtenerRedesSociales(metadata).map((red) => (
+                    <div key={red.id || red.nombre} className="border border-cyan-150 rounded-xl p-3 bg-white shadow-2xs flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                        <div className="w-8 h-8 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center text-cyan-700 shrink-0">
+                          {renderSocialIcon(red.icono || red.nombre, 'w-4 h-4')}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] font-mono font-bold uppercase text-cyan-900 block leading-none truncate">
+                            {red.nombre}
+                          </span>
+                          <span className="text-xs font-mono font-semibold text-cyan-700 block truncate">
+                            {red.usuario}
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={red.url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-cyan-600 hover:text-cyan-800 hover:underline bg-cyan-50 px-2.5 py-1 rounded-md border border-cyan-100 transition shrink-0"
+                      >
+                        <span>Visitar</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-
-            {/* Instagram Config */}
-            <div className="border border-cyan-150 rounded-xl p-3.5 space-y-3 bg-white shadow-2xs">
-              <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 text-cyan-700 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
-                <span className="text-[10px] font-mono font-bold uppercase text-cyan-800">Instagram del Proyecto</span>
-              </div>
-
-              {isEditing ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">Usuario</label>
-                    <input
-                      type="text"
-                      value={editedData.instagramUser || ''}
-                      onChange={(e) => setEditedData((prev) => ({ ...prev, instagramUser: e.target.value }))}
-                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
-                      placeholder="@ecologicalrace"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[8px] font-mono text-cyan-800/70 block uppercase mb-0.5">URL Directa</label>
-                    <input
-                      type="text"
-                      value={editedData.instagramUrl || ''}
-                      onChange={(e) => setEditedData((prev) => ({ ...prev, instagramUrl: e.target.value }))}
-                      className="w-full bg-white border border-cyan-200 rounded-lg p-2 text-slate-800 font-sans focus:outline-cyan-400 focus:bg-white text-xs"
-                      placeholder="https://instagram.com/..."
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="text-xs font-mono space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-cyan-800/60">Usuario:</span>
-                    <span className="text-cyan-950 font-bold">{metadata.instagramUser || '@ecologicalrace'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-cyan-800/60">Enlace:</span>
-                    <a href={metadata.instagramUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-cyan-600 hover:underline truncate max-w-[200px]">
-                      {metadata.instagramUrl || 'No definido'}
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div> {/* Closes Card B div */}
+          </div>
         </div> {/* Closes Grid (Card A & B) opened at line 338 */}
       </div>
 

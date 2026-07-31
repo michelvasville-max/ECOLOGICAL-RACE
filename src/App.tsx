@@ -23,7 +23,7 @@ import ActasSemanalesTab from './components/ActasSemanalesTab';
 import AddLogModal from './components/AddLogModal';
 import AddAulaModal from './components/AddAulaModal';
 import AddMiembroModal from './components/AddMiembroModal';
-import NuestroProyectoTab, { ProyectoMetadata } from './components/NuestroProyectoTab';
+import NuestroProyectoTab, { ProyectoMetadata, obtenerRedesSociales, renderSocialIcon } from './components/NuestroProyectoTab';
 import FuturisticImageSlider from './components/FuturisticImageSlider';
 import NeonLogo from './components/NeonLogo';
 
@@ -158,7 +158,11 @@ export default function App() {
     tiktokUser: '@ecologicalrace',
     tiktokUrl: 'https://www.tiktok.com/@ecologicalrace',
     instagramUser: '@ecologicalrace',
-    instagramUrl: 'https://www.instagram.com/ecologicalrace'
+    instagramUrl: 'https://www.instagram.com/ecologicalrace',
+    redesSociales: [
+      { id: 'tiktok-default', nombre: 'TikTok', icono: 'tiktok', usuario: '@ecologicalrace', url: 'https://www.tiktok.com/@ecologicalrace' },
+      { id: 'instagram-default', nombre: 'Instagram', icono: 'instagram', usuario: '@ecologicalrace', url: 'https://www.instagram.com/ecologicalrace' }
+    ]
   });
 
   const [activeTab, setActiveTab] = useState<'resumen' | 'ranking' | 'instituciones' | 'actas' | 'proyecto' | 'equipo'>('resumen');
@@ -208,7 +212,7 @@ export default function App() {
     const fallbackMetadata: ProyectoMetadata = {
       logoUrl: '',
       mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
-      vision: 'Ser recognized en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
+      vision: 'Ser reconocidos en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
       nombreProyecto: 'Ecological Race',
       categoria: 'Medio Ambiente y Responsabilidad Social',
       institucionBase: 'COAR Cajamarca',
@@ -218,7 +222,11 @@ export default function App() {
       tiktokUser: '@ecologicalrace',
       tiktokUrl: 'https://www.tiktok.com/@ecologicalrace',
       instagramUser: '@ecologicalrace',
-      instagramUrl: 'https://www.instagram.com/ecologicalrace'
+      instagramUrl: 'https://www.instagram.com/ecologicalrace',
+      redesSociales: [
+        { id: 'tiktok-default', nombre: 'TikTok', icono: 'tiktok', usuario: '@ecologicalrace', url: 'https://www.tiktok.com/@ecologicalrace' },
+        { id: 'instagram-default', nombre: 'Instagram', icono: 'instagram', usuario: '@ecologicalrace', url: 'https://www.instagram.com/ecologicalrace' }
+      ]
     };
 
     const unsubMeta = escucharProyectoMetadata((data) => {
@@ -1121,7 +1129,7 @@ export default function App() {
             <h5 className="text-white font-mono uppercase font-bold text-[10px] tracking-wider text-emerald-400">Contacto Ejecutor</h5>
             <div className="pt-1">
               <a
-                href="mailto:vasquezvillegasjhordanmichel@gmail.com"
+                href="mailto:ecologicalrace.coar@gmail.com"
                 className="inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-700 text-white text-[10px] font-mono font-bold px-3.5 py-2 rounded-lg transition border border-emerald-700 shadow-sm"
               >
                 ✉️ Enviar correo de contacto
@@ -1135,31 +1143,20 @@ export default function App() {
               Canales Oficiales
             </span>
             <div className="flex flex-col gap-2 pt-1">
-              <a
-                href={proyectoMetadata.tiktokUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-mono text-slate-300 hover:text-emerald-400 transition"
-              >
-                <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
-                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.43-.17-.11-.32-.23-.48-.36v7.24c0 1.27-.31 2.56-.93 3.65-1.16 2.05-3.5 3.34-5.85 3.17-2.73-.08-5.22-2.12-5.75-4.8-.62-2.78.71-5.86 3.19-7.1 1.02-.53 2.19-.74 3.34-.64V13.8c-.89-.13-1.85.08-2.58.63-.8.56-1.21 1.58-1.07 2.54.14.99.98 1.8 1.96 1.89 1.15.11 2.27-.64 2.54-1.74.07-.3.09-.6.09-.9V0h1.88z" />
-                </svg>
-                <span>TikTok: <span className="font-bold text-white">{proyectoMetadata.tiktokUser}</span></span>
-              </a>
-
-              <a
-                href={proyectoMetadata.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-mono text-slate-300 hover:text-emerald-400 transition"
-              >
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
-                <span>Instagram: <span className="font-bold text-white">{proyectoMetadata.instagramUser}</span></span>
-              </a>
+              {obtenerRedesSociales(proyectoMetadata).map((red) => (
+                <a
+                  key={red.id || red.nombre}
+                  href={red.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs font-mono text-slate-300 hover:text-emerald-400 transition"
+                >
+                  <span className="shrink-0 text-emerald-400">
+                    {renderSocialIcon(red.icono || red.nombre, 'w-4 h-4')}
+                  </span>
+                  <span>{red.nombre}: <span className="font-bold text-white">{red.usuario}</span></span>
+                </a>
+              ))}
             </div>
           </div>
 
