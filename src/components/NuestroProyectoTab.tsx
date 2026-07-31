@@ -54,6 +54,55 @@ export const DEFAULT_RETOS_ECOEFICIENCIA: RetoEcoeficiencia[] = [
   { id: 'papel-reto-default', icono: '📄', nombre: 'Uso Responsable del Papel', descripcion: 'Usar el papel de forma responsable (ambas caras, sin desperdiciar).' }
 ];
 
+export interface ManualSeccion {
+  id: string;
+  pregunta: string;
+  respuesta: string;
+}
+
+export const DEFAULT_MANUAL_SECCIONES: ManualSeccion[] = [
+  {
+    id: 'm1',
+    pregunta: '¿Cuál fue la finalidad de crear esta plataforma?',
+    respuesta: 'Ecological Race es el proyecto de reciclaje escolar impulsado por el COAR Cajamarca. Esta plataforma web se creó para darle seguimiento en vivo: aquí puedes ver el ranking de aulas, consultar los reportes semanales de pesaje y seguir el avance del proyecto en tiempo real.'
+  },
+  {
+    id: 'm2',
+    pregunta: 'Tipos de acceso',
+    respuesta: '• Visitante: puede ver todo el contenido público (ranking, reportes, instituciones, proyecto). Si inicia sesión con Google, también puede comentar y reaccionar a las evidencias.\n• Administrador: además de todo lo anterior, puede editar información, cargar pesajes, subir evidencias y moderar comentarios. Se activa con un código de acceso especial, independiente del login de Google.'
+  },
+  {
+    id: 'm3',
+    pregunta: '¿Cómo funciona el Ranking?',
+    respuesta: 'Mide los kg reciclados y el CO₂ evitado por cada aula, determinando así el primer lugar.'
+  },
+  {
+    id: 'm4',
+    pregunta: '¿Cómo se registra el pesaje semanal?',
+    respuesta: 'Entrar a "Reportes Semanales y Evidencias" → seleccionar el aula → cargar el pesaje de cada material (función de Administrador).'
+  },
+  {
+    id: 'm5',
+    pregunta: '¿Qué es el Bonus de Carbono?',
+    respuesta: 'Cada kilogramo reciclado equivale a una cantidad distinta de CO₂ evitado según el material (plástico, aluminio, papel).'
+  },
+  {
+    id: 'm6',
+    pregunta: '¿Qué son los Retos de Ecoeficiencia?',
+    respuesta: 'Cada aula puede ganar el Multiplicador Verde (+20% sobre sus kg recolectados) si cumple al 100% una cartilla diaria de buenas prácticas ambientales.'
+  },
+  {
+    id: 'm7',
+    pregunta: '¿Cómo comentar o reaccionar a una evidencia?',
+    respuesta: 'Cualquier visitante que inicie sesión con Google puede dejar comentarios y reaccionar con 👍 a las fotos publicadas en el Mosaico de Evidencias.'
+  },
+  {
+    id: 'm8',
+    pregunta: '¿Tienes un problema o duda?',
+    respuesta: 'Escríbenos directamente a través de nuestro botón de "Solicitar Apoyo" o al correo oficial de soporte.'
+  }
+];
+
 export interface ProyectoMetadata {
   id?: string;
   logoUrl: string;
@@ -73,9 +122,18 @@ export interface ProyectoMetadata {
   redesSociales?: RedSocial[];
   materialesBonus?: MaterialBonus[];
   retosEcoeficiencia?: RetoEcoeficiencia[];
+  manualSecciones?: ManualSeccion[];
   donacionesQrUrl?: string;
   donacionesTitular?: string;
   aliadosIntroTexto?: string;
+}
+
+export function obtenerManualSecciones(metadata?: ProyectoMetadata | null): ManualSeccion[] {
+  if (!metadata) return DEFAULT_MANUAL_SECCIONES;
+  if (metadata.manualSecciones && metadata.manualSecciones.length > 0) {
+    return metadata.manualSecciones;
+  }
+  return DEFAULT_MANUAL_SECCIONES;
 }
 
 export function obtenerMaterialesBonus(metadata?: ProyectoMetadata | null): MaterialBonus[] {

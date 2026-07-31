@@ -27,7 +27,7 @@ import AddAulaModal from './components/AddAulaModal';
 import AddMiembroModal from './components/AddMiembroModal';
 import AyudaSoporteModal from './components/AyudaSoporteModal';
 import DonacionesModal from './components/DonacionesModal';
-import NuestroProyectoTab, { ProyectoMetadata, obtenerRedesSociales, renderSocialIcon } from './components/NuestroProyectoTab';
+import NuestroProyectoTab, { ProyectoMetadata, obtenerRedesSociales, renderSocialIcon, DEFAULT_MANUAL_SECCIONES } from './components/NuestroProyectoTab';
 import FuturisticImageSlider from './components/FuturisticImageSlider';
 import NeonLogo from './components/NeonLogo';
 
@@ -243,7 +243,8 @@ export default function App() {
       redesSociales: [
         { id: 'tiktok-default', nombre: 'TikTok', icono: 'tiktok', usuario: '@ecologicalrace', url: 'https://www.tiktok.com/@ecologicalrace' },
         { id: 'instagram-default', nombre: 'Instagram', icono: 'instagram', usuario: '@ecologicalrace', url: 'https://www.instagram.com/ecologicalrace' }
-      ]
+      ],
+      manualSecciones: DEFAULT_MANUAL_SECCIONES
     };
 
     const unsubMeta = escucharProyectoMetadata((data) => {
@@ -1309,6 +1310,12 @@ export default function App() {
           <AyudaSoporteModal
             isOpen={isAyudaModalOpen}
             onClose={() => setIsAyudaModalOpen(false)}
+            metadata={proyectoMetadata}
+            rolActual={rolActual}
+            onGuardarMetadata={async (newMeta) => {
+              setProyectoMetadata(newMeta);
+              await guardarProyectoMetadata(newMeta);
+            }}
           />
         )}
       </AnimatePresence>

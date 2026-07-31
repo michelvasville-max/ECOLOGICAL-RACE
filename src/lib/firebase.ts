@@ -445,6 +445,7 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
     redesSociales: metadata.redesSociales || [],
     materialesBonus: metadata.materialesBonus || [],
     retosEcoeficiencia: metadata.retosEcoeficiencia || [],
+    manualSecciones: metadata.manualSecciones || [],
     donacionesQrUrl: metadata.donacionesQrUrl || '',
     donacionesTitular: metadata.donacionesTitular || 'Neida Villegas',
     aliadosIntroTexto: metadata.aliadosIntroTexto || ''
