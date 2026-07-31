@@ -1103,9 +1103,6 @@ export default function ActasSemanalesTab({
                   }
 
                   const numeroOrden = ordenMap.get(item.id) || (idx + 1);
-                  const textoEtiqueta = item.etiqueta && item.etiqueta.trim() !== ''
-                    ? item.etiqueta.trim()
-                    : `EVID. ${numeroOrden}`;
 
                   return (
                     <div
@@ -1142,9 +1139,23 @@ export default function ActasSemanalesTab({
                             </button>
                           </>
                         )}
-                        <span className="absolute top-2 right-2 text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs z-10 pointer-events-none">
-                          {textoEtiqueta}
-                        </span>
+                        <div className="absolute top-2 right-2 flex flex-wrap items-center justify-end gap-1 z-10 pointer-events-none max-w-[85%]">
+                          <span className="text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
+                            EVID. {numeroOrden}
+                          </span>
+                          {item.semana && item.semana > 0 && (
+                            <span className="text-[8px] font-mono text-blue-800 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
+                              REP {item.semana}
+                            </span>
+                          )}
+                          {item.etiqueta && item.etiqueta.trim() !== '' &&
+                           !item.etiqueta.trim().toUpperCase().startsWith('EVID') &&
+                           !item.etiqueta.trim().toUpperCase().startsWith('REP') && (
+                            <span className="text-[8px] font-mono text-stone-700 bg-stone-100 border border-stone-300 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
+                              {item.etiqueta.trim()}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Polaroid bottom portion with caption and likes */}
