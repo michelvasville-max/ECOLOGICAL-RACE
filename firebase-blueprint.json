@@ -44,6 +44,7 @@
         "fotoEvidenciaUrl": { "type": "string" },
         "fotoEvidenciaTipo": { "type": "string", "enum": ["imagen", "video"] },
         "tituloEvidencia": { "type": "string" },
+        "etiquetaEvidencia": { "type": "string" },
         "descripcionEvidencia": { "type": "string" }
       },
       "required": ["id", "aulaId", "semana", "fecha", "kgPlastico", "kgAluminio", "kgPapel", "multiplicadorVerde", "montoVentaSoles"]

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Aula, RegistroSemanal, Comentario, RolUsuario, Institucion, ReaccionFoto } from '../types';
 import CommentsSection from './CommentsSection';
-import { Calendar, FileText, Camera, Edit2, Plus, ArrowLeft, ArrowRight, ShieldAlert, BadgeHelp, CheckCircle2, Heart, Upload, Loader2, X, Trash2 } from 'lucide-react';
+import { Calendar, FileText, Camera, Edit2, Plus, ArrowLeft, ArrowRight, ShieldAlert, BadgeHelp, CheckCircle2, Heart, Upload, Loader2, X, Trash2, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { subirImagenAFirebase, eliminarRegistro } from '../lib/firebase';
@@ -32,6 +32,7 @@ interface ItemGaleria {
   id: string;
   url: string;
   titulo?: string;
+  etiqueta?: string;
   caption: string;
   fecha: string; // ISO date string
   semana: number;
@@ -78,6 +79,7 @@ export default function ActasSemanalesTab({
   const [mostrarFormFoto, setMostrarFormFoto] = useState(false);
   const [fotoArchivo, setFotoArchivo] = useState<File | null>(null);
   const [tituloFoto, setTituloFoto] = useState('');
+  const [etiquetaFoto, setEtiquetaFoto] = useState('');
   const [descripcionFoto, setDescripcionFoto] = useState('');
   const [fechaFoto, setFechaFoto] = useState(new Date().toISOString().split('T')[0]);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
@@ -85,10 +87,39 @@ export default function ActasSemanalesTab({
   // Estados para edición de fotos del mosaico
   const [fotoEditandoId, setFotoEditandoId] = useState<string | null>(null);
   const [tituloEditando, setTituloEditando] = useState<string>('');
+  const [etiquetaEditando, setEtiquetaEditando] = useState<string>('');
   const [descripcionEditando, setDescripcionEditando] = useState<string>('');
   const [fechaEditando, setFechaEditando] = useState<string>('');
   const [fotoArchivoEditando, setFotoArchivoEditando] = useState<File | null>(null);
   const [guardandoEdicion, setGuardandoEdicion] = useState<boolean>(false);
+
+  const handleDescargarImagen = async (url: string, tituloOCaption?: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const extension = blob.type.split('/')[1] || 'jpg';
+      const nombreLimpio = (tituloOCaption || 'evidencia')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/gi, '_')
+        .slice(0, 30);
+      a.download = `${nombreLimpio}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.download = 'evidencia.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
 
   const totalSemanas = 17;
 
@@ -150,12 +181,20 @@ export default function ActasSemanalesTab({
         id: reg.id,
         url: reg.fotoEvidenciaUrl,
         titulo: reg.tituloEvidencia || '',
+        etiqueta: reg.etiquetaEvidencia || '',
         caption: reg.descripcionEvidencia || `Evidencia de pesaje - Reporte N.° ${reg.semana}`,
         fecha: reg.fecha || reg.updatedAt || '2026-07-02',
         semana: reg.semana,
         tipo,
       });
     }
+  });
+
+  // Create a map of item.id -> chronological order number (1-based, 1 = oldest created)
+  const ordenMap = new Map<string, number>();
+  const itemsOrdenadosAsc = [...itemsGaleria].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+  itemsOrdenadosAsc.forEach((it, index) => {
+    ordenMap.set(it.id, index + 1);
   });
 
   // Sort chronological: Newest to oldest (recent first)
@@ -254,6 +293,7 @@ export default function ActasSemanalesTab({
         fotoEvidenciaUrl: url,
         fotoEvidenciaTipo,
         tituloEvidencia: tituloFoto.trim(),
+        etiquetaEvidencia: etiquetaFoto.trim(),
         descripcionEvidencia: descripcionFoto.trim(),
         updatedAt: new Date().toISOString()
       };
@@ -263,6 +303,7 @@ export default function ActasSemanalesTab({
       }
       
       setTituloFoto('');
+      setEtiquetaFoto('');
       setDescripcionFoto('');
       setFechaFoto(new Date().toISOString().split('T')[0]);
       setFotoArchivo(null);
@@ -309,6 +350,7 @@ export default function ActasSemanalesTab({
         fotoEvidenciaUrl: url,
         fotoEvidenciaTipo,
         tituloEvidencia: tituloEditando.trim(),
+        etiquetaEvidencia: etiquetaEditando.trim(),
         descripcionEvidencia: descripcionEditando.trim(),
         updatedAt: new Date().toISOString(),
       };
@@ -320,6 +362,7 @@ export default function ActasSemanalesTab({
       setFotoEditandoId(null);
       setFotoArchivoEditando(null);
       setTituloEditando('');
+      setEtiquetaEditando('');
       setDescripcionEditando('');
       setFechaEditando('');
     } catch (error) {
@@ -639,7 +682,7 @@ export default function ActasSemanalesTab({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
                         Fecha de la Evidencia:
@@ -655,13 +698,26 @@ export default function ActasSemanalesTab({
 
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
-                        Título de la Evidencia (Opcional):
+                        Etiqueta / Badge (Opcional):
+                      </label>
+                      <input
+                        type="text"
+                        value={etiquetaFoto}
+                        onChange={(e) => setEtiquetaFoto(e.target.value)}
+                        placeholder="Ej. REP. 3 o Conferencia"
+                        className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono text-stone-500 uppercase font-black">
+                        Título (Opcional):
                       </label>
                       <input
                         type="text"
                         value={tituloFoto}
                         onChange={(e) => setTituloFoto(e.target.value)}
-                        placeholder="Ej. JORNADA DE RECICLAJE - AULA 3B"
+                        placeholder="Ej. JORNADA DE RECICLAJE"
                         className="w-full bg-stone-50 border border-stone-200 rounded-lg p-2 text-xs font-semibold text-stone-800 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
@@ -745,7 +801,7 @@ export default function ActasSemanalesTab({
                       >
                         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
                           <span className="text-[10px] font-mono text-emerald-800 font-extrabold uppercase">
-                            Editar Evidencia (Rep. {item.semana})
+                            Editar Evidencia
                           </span>
                           <button
                             type="button"
@@ -796,11 +852,11 @@ export default function ActasSemanalesTab({
                           </div>
                         </div>
 
-                        {/* Fecha and Titulo inputs */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {/* Fecha, Etiqueta, and Titulo inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <div className="space-y-1">
                             <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
-                              Fecha de la Evidencia:
+                              Fecha de Evidencia:
                             </label>
                             <input
                               type="date"
@@ -808,6 +864,19 @@ export default function ActasSemanalesTab({
                               onChange={(e) => setFechaEditando(e.target.value)}
                               className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                               required
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-mono text-stone-500 uppercase font-black">
+                              Etiqueta (Opcional):
+                            </label>
+                            <input
+                              type="text"
+                              value={etiquetaEditando}
+                              onChange={(e) => setEtiquetaEditando(e.target.value)}
+                              placeholder="Ej. REP. 3 o Conferencia"
+                              className="w-full bg-stone-50 border border-stone-200 rounded-lg p-1.5 text-xs font-semibold text-stone-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                             />
                           </div>
 
@@ -875,6 +944,11 @@ export default function ActasSemanalesTab({
                     );
                   }
 
+                  const numeroOrden = ordenMap.get(item.id) || (idx + 1);
+                  const textoEtiqueta = item.etiqueta && item.etiqueta.trim() !== ''
+                    ? item.etiqueta.trim()
+                    : `EVID. ${numeroOrden}`;
+
                   return (
                     <div
                       key={item.id}
@@ -884,7 +958,7 @@ export default function ActasSemanalesTab({
                       <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-14 h-4 bg-amber-100/50 shadow-[0_1px_2px_rgba(0,0,0,0.02)] border border-amber-200/20 backdrop-blur-xs -rotate-2 z-20" />
 
                       {/* Photo / Video Area */}
-                      <div className="w-full aspect-[4/3] overflow-hidden bg-stone-100 border border-stone-200/60 relative rounded-[1px_2px_1px_2px]">
+                      <div className="w-full aspect-[4/3] overflow-hidden bg-stone-100 border border-stone-200/60 relative rounded-[1px_2px_1px_2px] group">
                         {item.tipo === 'video' ? (
                           <video
                             src={item.url}
@@ -893,15 +967,25 @@ export default function ActasSemanalesTab({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <img
-                            src={item.url}
-                            alt={item.caption}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover filter brightness-95 hover:brightness-100 transition duration-300"
-                          />
+                          <>
+                            <img
+                              src={item.url}
+                              alt={item.caption}
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover filter brightness-95 hover:brightness-100 transition duration-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDescargarImagen(item.url, item.titulo || item.caption)}
+                              title="Descargar imagen"
+                              className="absolute bottom-2 left-2 z-10 p-1.5 rounded-md bg-stone-900/70 hover:bg-stone-900/90 text-white backdrop-blur-xs transition-all duration-200 cursor-pointer shadow-xs border border-white/20 opacity-80 hover:opacity-100 hover:scale-105 flex items-center justify-center"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         )}
                         <span className="absolute top-2 right-2 text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs z-10 pointer-events-none">
-                          REP. {item.semana}
+                          {textoEtiqueta}
                         </span>
                       </div>
 
@@ -945,6 +1029,7 @@ export default function ActasSemanalesTab({
                                 onClick={() => {
                                   setFotoEditandoId(item.id);
                                   setTituloEditando(item.titulo || '');
+                                  setEtiquetaEditando(item.etiqueta || '');
                                   setDescripcionEditando(item.caption);
                                   setFechaEditando(item.fecha ? item.fecha.split('T')[0] : new Date().toISOString().split('T')[0]);
                                   setFotoArchivoEditando(null);

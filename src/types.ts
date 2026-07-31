@@ -33,6 +33,7 @@ export interface RegistroSemanal {
   fotoEvidenciaUrl?: string; // eco-activity photo or video (no kids' faces)
   fotoEvidenciaTipo?: 'imagen' | 'video';
   tituloEvidencia?: string;
+  etiquetaEvidencia?: string;
   descripcionEvidencia?: string;
   updatedAt?: string; // Timestamp of latest save/modification
 }
