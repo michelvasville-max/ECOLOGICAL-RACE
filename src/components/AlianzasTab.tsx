@@ -55,13 +55,15 @@ interface DraftEvidencia {
 function getVideoInfo(url: string) {
   if (!url) return { isEmbeddable: false, embedUrl: null, platformName: 'Video', rawUrl: '' };
   const cleanUrl = url.trim();
+  const currentOrigin = typeof window !== 'undefined' && window.location?.origin ? encodeURIComponent(window.location.origin) : '';
+  const originParam = currentOrigin ? `&origin=${currentOrigin}` : '';
 
   // YouTube watch
   if (cleanUrl.includes('youtube.com/watch')) {
     try {
       const parsed = new URL(cleanUrl);
       const v = parsed.searchParams.get('v');
-      if (v) return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${v}?enablejsapi=1`, platformName: 'YouTube', rawUrl: cleanUrl };
+      if (v) return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${v}?enablejsapi=1${originParam}`, platformName: 'YouTube', rawUrl: cleanUrl };
     } catch (e) {}
   }
   // YouTube short link
@@ -69,14 +71,18 @@ function getVideoInfo(url: string) {
     const parts = cleanUrl.split('youtu.be/');
     if (parts[1]) {
       const id = parts[1].split('?')[0].split('&')[0];
-      return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${id}?enablejsapi=1`, platformName: 'YouTube', rawUrl: cleanUrl };
+      return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${id}?enablejsapi=1${originParam}`, platformName: 'YouTube', rawUrl: cleanUrl };
     }
   }
   // YouTube embed direct
   if (cleanUrl.includes('youtube.com/embed/')) {
-    const embedUrl = cleanUrl.includes('enablejsapi=1')
-      ? cleanUrl
-      : (cleanUrl.includes('?') ? `${cleanUrl}&enablejsapi=1` : `${cleanUrl}?enablejsapi=1`);
+    let embedUrl = cleanUrl;
+    if (!embedUrl.includes('enablejsapi=1')) {
+      embedUrl += (embedUrl.includes('?') ? '&enablejsapi=1' : '?enablejsapi=1');
+    }
+    if (!embedUrl.includes('origin=') && currentOrigin) {
+      embedUrl += `&origin=${currentOrigin}`;
+    }
     return { isEmbeddable: true, embedUrl, platformName: 'YouTube', rawUrl: cleanUrl };
   }
 
