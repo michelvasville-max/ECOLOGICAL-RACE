@@ -24,6 +24,7 @@ import AddLogModal from './components/AddLogModal';
 import AddAulaModal from './components/AddAulaModal';
 import AddMiembroModal from './components/AddMiembroModal';
 import AyudaSoporteModal from './components/AyudaSoporteModal';
+import DonacionesModal from './components/DonacionesModal';
 import NuestroProyectoTab, { ProyectoMetadata, obtenerRedesSociales, renderSocialIcon } from './components/NuestroProyectoTab';
 import FuturisticImageSlider from './components/FuturisticImageSlider';
 import NeonLogo from './components/NeonLogo';
@@ -77,6 +78,7 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
+  Heart,
   Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -174,6 +176,7 @@ export default function App() {
   const [isAddAulaModalOpen, setIsAddAulaModalOpen] = useState(false);
   const [isAddMiembroModalOpen, setIsAddMiembroModalOpen] = useState(false);
   const [isAyudaModalOpen, setIsAyudaModalOpen] = useState(false);
+  const [isDonacionesModalOpen, setIsDonacionesModalOpen] = useState(false);
   const [registroParaEditar, setRegistroParaEditar] = useState<RegistroSemanal | null>(null);
 
   // --- FILTER STATE ---
@@ -920,6 +923,32 @@ export default function App() {
                 })}
               </div>
 
+              {/* Tarjeta / Botón de Donaciones */}
+              <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/40 rounded-3xl p-6 shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="space-y-1.5 relative z-10">
+                  <span className="text-[10px] font-mono font-black text-emerald-400 bg-emerald-900/60 border border-emerald-500/30 px-3 py-1 rounded-full uppercase tracking-widest inline-flex items-center gap-1.5 shadow-sm">
+                    <Heart className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/30" />
+                    Apoyo y Sostenibilidad
+                  </span>
+                  <h4 className="text-lg font-black text-white font-display uppercase tracking-tight pt-1">
+                    💚 Apoya el Proyecto Ecological Race
+                  </h4>
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Tus aportes nos ayudan a adquirir materiales de reciclaje, financiar incentivos para las aulas ganadoras y mantener activa esta plataforma.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsDonacionesModalOpen(true)}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 cursor-pointer shrink-0 relative z-10 flex items-center justify-center space-x-2"
+                >
+                  <Heart className="w-4 h-4 fill-slate-950" />
+                  <span>💚 Apoya el Proyecto / Donaciones</span>
+                </button>
+              </div>
+
               {/* Informational project brief footer in home tab */}
               <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-3xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
@@ -1229,6 +1258,22 @@ export default function App() {
           <AyudaSoporteModal
             isOpen={isAyudaModalOpen}
             onClose={() => setIsAyudaModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 10. DONACIONES DIALOG */}
+      <AnimatePresence>
+        {isDonacionesModalOpen && (
+          <DonacionesModal
+            isOpen={isDonacionesModalOpen}
+            onClose={() => setIsDonacionesModalOpen(false)}
+            metadata={proyectoMetadata}
+            rolActual={rolActual}
+            onGuardarMetadata={async (meta) => {
+              setProyectoMetadata(meta);
+              await guardarProyectoMetadata(meta);
+            }}
           />
         )}
       </AnimatePresence>

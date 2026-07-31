@@ -73,6 +73,8 @@ export interface ProyectoMetadata {
   redesSociales?: RedSocial[];
   materialesBonus?: MaterialBonus[];
   retosEcoeficiencia?: RetoEcoeficiencia[];
+  donacionesQrUrl?: string;
+  donacionesTitular?: string;
 }
 
 export function obtenerMaterialesBonus(metadata?: ProyectoMetadata | null): MaterialBonus[] {

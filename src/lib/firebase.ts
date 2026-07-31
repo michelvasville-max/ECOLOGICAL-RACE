@@ -421,7 +421,9 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
     instagramUrl: metadata.instagramUrl || '',
     redesSociales: metadata.redesSociales || [],
     materialesBonus: metadata.materialesBonus || [],
-    retosEcoeficiencia: metadata.retosEcoeficiencia || []
+    retosEcoeficiencia: metadata.retosEcoeficiencia || [],
+    donacionesQrUrl: metadata.donacionesQrUrl || '',
+    donacionesTitular: metadata.donacionesTitular || 'Neida Villegas'
   });
 }
 
