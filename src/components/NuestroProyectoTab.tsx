@@ -28,6 +28,32 @@ export const DEFAULT_REDES_SOCIALES: RedSocial[] = [
   }
 ];
 
+export interface MaterialBonus {
+  id: string;
+  icono: string;
+  nombre: string;
+  valorCO2: number;
+}
+
+export interface RetoEcoeficiencia {
+  id: string;
+  icono: string;
+  nombre: string;
+  descripcion: string;
+}
+
+export const DEFAULT_MATERIALES_BONUS: MaterialBonus[] = [
+  { id: 'plastico-default', icono: '🥤', nombre: 'Plástico', valorCO2: 1.5 },
+  { id: 'aluminio-default', icono: '🥫', nombre: 'Aluminio', valorCO2: 9.0 },
+  { id: 'papel-default', icono: '📦', nombre: 'Papel / Cartón', valorCO2: 1.0 }
+];
+
+export const DEFAULT_RETOS_ECOEFICIENCIA: RetoEcoeficiencia[] = [
+  { id: 'luces-default', icono: '💡', nombre: 'Apagar Luces', descripcion: 'Apagar las luces cuando no se usan.' },
+  { id: 'canos-default', icono: '💧', nombre: 'Cerrar Caños', descripcion: 'Cerrar bien los caños de agua.' },
+  { id: 'papel-reto-default', icono: '📄', nombre: 'Uso Responsable del Papel', descripcion: 'Usar el papel de forma responsable (ambas caras, sin desperdiciar).' }
+];
+
 export interface ProyectoMetadata {
   id?: string;
   logoUrl: string;
@@ -45,6 +71,24 @@ export interface ProyectoMetadata {
   instagramUser?: string;
   instagramUrl?: string;
   redesSociales?: RedSocial[];
+  materialesBonus?: MaterialBonus[];
+  retosEcoeficiencia?: RetoEcoeficiencia[];
+}
+
+export function obtenerMaterialesBonus(metadata?: ProyectoMetadata | null): MaterialBonus[] {
+  if (!metadata) return DEFAULT_MATERIALES_BONUS;
+  if (metadata.materialesBonus && metadata.materialesBonus.length > 0) {
+    return metadata.materialesBonus;
+  }
+  return DEFAULT_MATERIALES_BONUS;
+}
+
+export function obtenerRetosEcoeficiencia(metadata?: ProyectoMetadata | null): RetoEcoeficiencia[] {
+  if (!metadata) return DEFAULT_RETOS_ECOEFICIENCIA;
+  if (metadata.retosEcoeficiencia && metadata.retosEcoeficiencia.length > 0) {
+    return metadata.retosEcoeficiencia;
+  }
+  return DEFAULT_RETOS_ECOEFICIENCIA;
 }
 
 export function obtenerRedesSociales(metadata?: ProyectoMetadata | null): RedSocial[] {
@@ -145,7 +189,9 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
     metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
     imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
     imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-    redesSociales: obtenerRedesSociales(metadata)
+    redesSociales: obtenerRedesSociales(metadata),
+    materialesBonus: obtenerMaterialesBonus(metadata),
+    retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
   });
 
   React.useEffect(() => {
@@ -154,7 +200,9 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
       metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
       imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
       imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-      redesSociales: obtenerRedesSociales(metadata)
+      redesSociales: obtenerRedesSociales(metadata),
+      materialesBonus: obtenerMaterialesBonus(metadata),
+      retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
     });
   }, [metadata]);
 
@@ -230,10 +278,9 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
       metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
       imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
       imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-      tiktokUser: metadata.tiktokUser || '@ecologicalrace',
-      tiktokUrl: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace',
-      instagramUser: metadata.instagramUser || '@ecologicalrace',
-      instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
+      redesSociales: obtenerRedesSociales(metadata),
+      materialesBonus: obtenerMaterialesBonus(metadata),
+      retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
     });
     setIsEditing(false);
   };
@@ -318,10 +365,9 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
                   imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
                   imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
-                  tiktokUser: metadata.tiktokUser || '@ecologicalrace',
-                  tiktokUrl: metadata.tiktokUrl || 'https://www.tiktok.com/@ecologicalrace',
-                  instagramUser: metadata.instagramUser || '@ecologicalrace',
-                  instagramUrl: metadata.instagramUrl || 'https://www.instagram.com/ecologicalrace'
+                  redesSociales: obtenerRedesSociales(metadata),
+                  materialesBonus: obtenerMaterialesBonus(metadata),
+                  retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
                 });
                 setIsEditing(true);
               }}
@@ -788,7 +834,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
           <div className="relative z-10 space-y-6">
             {/* HUD Header */}
-            <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4">
+            <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 flex-wrap gap-2">
               <div className="flex items-center space-x-3">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute -inset-1.5 rounded-full bg-emerald-500/20 blur-xs animate-pulse" />
@@ -808,76 +854,178 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   </div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                CO₂ Evitado
-              </span>
+
+              <div className="flex items-center gap-2">
+                {rolActual === 'ADMIN' && (
+                  !isEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditedData({
+                          ...metadata,
+                          metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
+                          imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
+                          imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
+                          redesSociales: obtenerRedesSociales(metadata),
+                          materialesBonus: obtenerMaterialesBonus(metadata),
+                          retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
+                        });
+                        setIsEditing(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-xs cursor-pointer transition"
+                    >
+                      <Edit className="w-3 h-3" />
+                      <span>Editar</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-mono text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-xs cursor-pointer transition"
+                    >
+                      <Save className="w-3 h-3" />
+                      <span>Guardar</span>
+                    </button>
+                  )
+                )}
+                <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                  CO₂ Evitado
+                </span>
+              </div>
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed font-sans font-medium">
-              El <span className="text-emerald-400 font-semibold font-mono">Bonus de Carbono</span> mide en kilogramos la cantidad de <span className="text-emerald-400 font-semibold font-mono">CO₂</span> (gases de efecto invernadero) que se evita emitir gracias al reciclaje de cada aula, calculated en tiempo real según el tipo de material procesado.
+              El <span className="text-emerald-400 font-semibold font-mono">Bonus de Carbono</span> mide en kilogramos la cantidad de <span className="text-emerald-400 font-semibold font-mono">CO₂</span> (gases de efecto invernadero) que se evita emitir gracias al reciclaje de cada aula, calculado en tiempo real según el tipo de material procesado.
             </p>
 
-            {/* Futuristic Tech Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              
-              {/* Plástico Card */}
-              <motion.div 
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-emerald-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
-              >
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-emerald-500/40 transition-colors">
-                  <div className="absolute inset-0 bg-emerald-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                  🥤
+            {/* Dynamic Materials Grid or Edit List */}
+            {isEditing ? (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase text-emerald-300">
+                    Materiales del Bonus de Carbono
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentList = editedData.materialesBonus || obtenerMaterialesBonus(metadata);
+                      const nuevoMat: MaterialBonus = {
+                        id: `mat-${Date.now()}`,
+                        icono: '📦',
+                        nombre: 'Nuevo Material',
+                        valorCO2: 1.0
+                      };
+                      setEditedData((prev) => ({ ...prev, materialesBonus: [...currentList, nuevoMat] }));
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg transition cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Agregar Material</span>
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Plástico</span>
-                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
-                  <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-emerald-500/5 border border-emerald-500/20 mt-1">
-                    <span className="text-xs font-mono font-black text-emerald-400 tracking-tight">1.5 kg CO₂</span>
-                  </div>
-                </div>
-              </motion.div>
 
-              {/* Aluminio Card */}
-              <motion.div 
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-cyan-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
-              >
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-cyan-500/40 transition-colors">
-                  <div className="absolute inset-0 bg-cyan-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                  🥫
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Aluminio</span>
-                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
-                  <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-emerald-500/5 border border-emerald-500/20 mt-1">
-                    <span className="text-xs font-mono font-black text-cyan-400 tracking-tight">9.0 kg CO₂</span>
-                  </div>
-                </div>
-              </motion.div>
+                <div className="space-y-2.5">
+                  {(editedData.materialesBonus || obtenerMaterialesBonus(metadata)).map((mat, idx) => (
+                    <div key={mat.id || idx} className="bg-emerald-900/60 border border-emerald-700/60 rounded-xl p-3 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase">
+                          Material #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentList = editedData.materialesBonus || obtenerMaterialesBonus(metadata);
+                            const updated = currentList.filter((_, i) => i !== idx);
+                            setEditedData((prev) => ({ ...prev, materialesBonus: updated }));
+                          }}
+                          className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition cursor-pointer"
+                          title="Eliminar material"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
 
-              {/* Papel Card */}
-              <motion.div 
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-teal-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
-              >
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-teal-500/40 transition-colors">
-                  <div className="absolute inset-0 bg-teal-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                  📦
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">Papel</span>
-                  <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
-                  <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-teal-500/5 border border-teal-500/20 mt-1">
-                    <span className="text-xs font-mono font-black text-teal-400 tracking-tight">1.0 kg CO₂</span>
-                  </div>
-                </div>
-              </motion.div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[8px] font-mono text-emerald-300/80 block uppercase mb-0.5">Ícono / Emoji</label>
+                          <input
+                            type="text"
+                            value={mat.icono}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.materialesBonus || obtenerMaterialesBonus(metadata))];
+                              currentList[idx] = { ...currentList[idx], icono: e.target.value };
+                              setEditedData((prev) => ({ ...prev, materialesBonus: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-emerald-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-emerald-400"
+                            placeholder="Ej. 🥤"
+                          />
+                        </div>
 
-            </div>
+                        <div>
+                          <label className="text-[8px] font-mono text-emerald-300/80 block uppercase mb-0.5">Nombre Material</label>
+                          <input
+                            type="text"
+                            value={mat.nombre}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.materialesBonus || obtenerMaterialesBonus(metadata))];
+                              currentList[idx] = { ...currentList[idx], nombre: e.target.value };
+                              setEditedData((prev) => ({ ...prev, materialesBonus: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-emerald-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-emerald-400"
+                            placeholder="Ej. Plástico"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[8px] font-mono text-emerald-300/80 block uppercase mb-0.5">Valor CO₂ (kg/kg)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={mat.valorCO2}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.materialesBonus || obtenerMaterialesBonus(metadata))];
+                              currentList[idx] = { ...currentList[idx], valorCO2: parseFloat(e.target.value) || 0 };
+                              setEditedData((prev) => ({ ...prev, materialesBonus: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-emerald-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-emerald-400"
+                            placeholder="Ej. 1.5"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!editedData.materialesBonus || editedData.materialesBonus.length === 0) && (
+                    <p className="text-xs text-slate-400 font-mono text-center py-2">
+                      No hay materiales configurados. Haz clic en "Agregar Material".
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                {obtenerMaterialesBonus(metadata).map((mat) => (
+                  <motion.div 
+                    key={mat.id || mat.nombre}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    className="relative overflow-hidden bg-emerald-900/40 border border-emerald-800/60 hover:border-emerald-500/40 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-3 group/item transition-all duration-300 shadow-inner"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-2xl shadow-md relative group-hover/item:border-emerald-500/40 transition-colors">
+                      <div className="absolute inset-0 bg-emerald-500/5 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                      {mat.icono || '♻️'}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-black text-slate-100 tracking-wider uppercase font-display">{mat.nombre}</span>
+                      <div className="text-[9px] font-mono text-emerald-300/85 font-bold uppercase tracking-wider">1 KG Reciclado =</div>
+                      <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-emerald-500/5 border border-emerald-500/20 mt-1">
+                        <span className="text-xs font-mono font-black text-emerald-400 tracking-tight">{mat.valorCO2} kg CO₂</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -898,7 +1046,7 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
 
           <div className="relative z-10 space-y-6">
             {/* HUD Header */}
-            <div className="flex items-center justify-between border-b border-cyan-500/15 pb-4">
+            <div className="flex items-center justify-between border-b border-cyan-500/15 pb-4 flex-wrap gap-2">
               <div className="flex items-center space-x-3">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute -inset-1.5 rounded-full bg-cyan-500/20 blur-xs animate-pulse" />
@@ -918,67 +1066,177 @@ export default function NuestroProyectoTab({ metadata, rolActual, equipo, onGuar
                   </div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-                +20% Multiplicador
-              </span>
+
+              <div className="flex items-center gap-2">
+                {rolActual === 'ADMIN' && (
+                  !isEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditedData({
+                          ...metadata,
+                          metaGlobalCO2: metadata.metaGlobalCO2 || 1500,
+                          imagenMisionUrl: metadata.imagenMisionUrl || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800',
+                          imagenVisionUrl: metadata.imagenVisionUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
+                          redesSociales: obtenerRedesSociales(metadata),
+                          materialesBonus: obtenerMaterialesBonus(metadata),
+                          retosEcoeficiencia: obtenerRetosEcoeficiencia(metadata)
+                        });
+                        setIsEditing(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-xs cursor-pointer transition"
+                    >
+                      <Edit className="w-3 h-3" />
+                      <span>Editar</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="inline-flex items-center gap-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-xs cursor-pointer transition"
+                    >
+                      <Save className="w-3 h-3" />
+                      <span>Guardar</span>
+                    </button>
+                  )
+                )}
+                <span className="text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                  +20% Multiplicador
+                </span>
+              </div>
             </div>
 
             <p className="text-sm text-slate-300 leading-relaxed font-sans font-medium">
               Cada aula puede ganar el <span className="text-cyan-400 font-semibold font-mono">Multiplicador Verde (+20% sobre sus kg recolectados)</span> si cumple al 100% una cartilla diaria de buenas prácticas ambientales en el salón:
             </p>
 
-            {/* List of Cyber Challenges */}
-            <div className="space-y-3 pt-2">
-              
-              {/* Item 1 */}
-              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
-                <div className="absolute inset-y-0 left-0 w-[3px] bg-yellow-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-yellow-400 shrink-0 relative shadow-sm">
-                  <div className="absolute inset-0 bg-yellow-500/5 rounded-xl" />
-                  <Zap className="w-5 h-5 fill-yellow-500/10" />
+            {/* List of Cyber Challenges or Edit List */}
+            {isEditing ? (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase text-cyan-300">
+                    Retos de Ecoeficiencia Configurables
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentList = editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata);
+                      const nuevoReto: RetoEcoeficiencia = {
+                        id: `reto-${Date.now()}`,
+                        icono: '🌱',
+                        nombre: 'Nuevo Reto',
+                        descripcion: 'Descripción del nuevo reto ambiental.'
+                      };
+                      setEditedData((prev) => ({ ...prev, retosEcoeficiencia: [...currentList, nuevoReto] }));
+                    }}
+                    className="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1 rounded-lg transition cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Agregar Reto</span>
+                  </button>
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider font-display flex items-center gap-2">
-                    Apagar Luces
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                  </h4>
-                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Apagar las luces cuando no se usan.</p>
+
+                <div className="space-y-2.5">
+                  {(editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata)).map((reto, idx) => (
+                    <div key={reto.id || idx} className="bg-emerald-900/60 border border-cyan-800/60 rounded-xl p-3 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold text-cyan-300 uppercase">
+                          Reto #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentList = editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata);
+                            const updated = currentList.filter((_, i) => i !== idx);
+                            setEditedData((prev) => ({ ...prev, retosEcoeficiencia: updated }));
+                          }}
+                          className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition cursor-pointer"
+                          title="Eliminar reto"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[8px] font-mono text-cyan-300/80 block uppercase mb-0.5">Ícono / Emoji</label>
+                          <input
+                            type="text"
+                            value={reto.icono}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata))];
+                              currentList[idx] = { ...currentList[idx], icono: e.target.value };
+                              setEditedData((prev) => ({ ...prev, retosEcoeficiencia: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-cyan-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-cyan-400"
+                            placeholder="Ej. 💡"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="text-[8px] font-mono text-cyan-300/80 block uppercase mb-0.5">Nombre del Reto</label>
+                          <input
+                            type="text"
+                            value={reto.nombre}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata))];
+                              currentList[idx] = { ...currentList[idx], nombre: e.target.value };
+                              setEditedData((prev) => ({ ...prev, retosEcoeficiencia: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-cyan-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-cyan-400"
+                            placeholder="Ej. Apagar Luces"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <label className="text-[8px] font-mono text-cyan-300/80 block uppercase mb-0.5">Descripción</label>
+                          <input
+                            type="text"
+                            value={reto.descripcion}
+                            onChange={(e) => {
+                              const currentList = [...(editedData.retosEcoeficiencia || obtenerRetosEcoeficiencia(metadata))];
+                              currentList[idx] = { ...currentList[idx], descripcion: e.target.value };
+                              setEditedData((prev) => ({ ...prev, retosEcoeficiencia: currentList }));
+                            }}
+                            className="w-full bg-emerald-950/80 border border-cyan-700 rounded-lg p-1.5 text-white font-sans text-xs focus:outline-cyan-400"
+                            placeholder="Ej. Apagar las luces cuando no se usan."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!editedData.retosEcoeficiencia || editedData.retosEcoeficiencia.length === 0) && (
+                    <p className="text-xs text-slate-400 font-mono text-center py-2">
+                      No hay retos configurados. Haz clic en "Agregar Reto".
+                    </p>
+                  )}
                 </div>
               </div>
-
-              {/* Item 2 */}
-              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
-                <div className="absolute inset-y-0 left-0 w-[3px] bg-cyan-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-cyan-400 shrink-0 relative shadow-sm">
-                  <div className="absolute inset-0 bg-cyan-500/5 rounded-xl" />
-                  <Droplet className="w-5 h-5 fill-cyan-500/10" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider font-display flex items-center gap-2">
-                    Cerrar Caños
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                  </h4>
-                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Cerrar bien los caños de agua.</p>
-                </div>
+            ) : (
+              <div className="space-y-3 pt-2">
+                {obtenerRetosEcoeficiencia(metadata).map((reto) => (
+                  <motion.div 
+                    key={reto.id || reto.nombre}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/40 transition-all duration-300 flex items-center gap-4 cursor-pointer shadow-inner"
+                  >
+                    <div className="absolute inset-y-0 left-0 w-[3px] bg-cyan-500/50" />
+                    <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-cyan-400 shrink-0 relative shadow-sm text-xl">
+                      <div className="absolute inset-0 bg-cyan-500/5 rounded-xl" />
+                      {reto.icono || '🌱'}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white uppercase tracking-wider font-display flex items-center gap-2">
+                        {reto.nombre}
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                      </h4>
+                      <p className="text-[11px] text-slate-300 font-medium mt-0.5">{reto.descripcion}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-
-              {/* Item 3 */}
-              <div className="relative group/line overflow-hidden bg-emerald-950/40 rounded-2xl p-4 border border-emerald-800/60 hover:border-cyan-500/30 transition-all duration-300 flex items-center gap-4">
-                <div className="absolute inset-y-0 left-0 w-[3px] bg-emerald-500/50" />
-                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 shrink-0 relative shadow-sm">
-                  <div className="absolute inset-0 bg-emerald-500/5 rounded-xl" />
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider font-display flex items-center gap-2">
-                    Uso Responsable del Papel
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </h4>
-                  <p className="text-[11px] text-slate-300 font-medium mt-0.5">Usar el papel de forma responsable (ambas caras, sin desperdiciar).</p>
-                </div>
-              </div>
-
-            </div>
+            )}
           </div>
         </motion.div>
       </div>

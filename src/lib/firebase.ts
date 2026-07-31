@@ -418,7 +418,10 @@ export async function guardarProyectoMetadata(metadata: ProyectoMetadata) {
     tiktokUser: metadata.tiktokUser || '',
     tiktokUrl: metadata.tiktokUrl || '',
     instagramUser: metadata.instagramUser || '',
-    instagramUrl: metadata.instagramUrl || ''
+    instagramUrl: metadata.instagramUrl || '',
+    redesSociales: metadata.redesSociales || [],
+    materialesBonus: metadata.materialesBonus || [],
+    retosEcoeficiencia: metadata.retosEcoeficiencia || []
   });
 }
 
