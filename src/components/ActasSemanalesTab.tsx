@@ -1124,7 +1124,7 @@ export default function ActasSemanalesTab({
                           <span className="text-[8px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
                             EVID. {numeroOrden}
                           </span>
-                          {item.semana && item.semana > 0 && (
+                          {item.semana > 0 && (
                             <span className="text-[8px] font-mono text-blue-800 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded font-black tracking-wider shadow-2xs">
                               REP {item.semana}
                             </span>
