@@ -916,9 +916,9 @@ export default function ActasSemanalesTab({
                               {item.titulo}
                             </h4>
                           )}
-                          <p className="text-xs text-stone-700 font-sans font-semibold italic leading-snug tracking-tight line-clamp-3" title={item.caption}>
+                          <div className="max-h-[64px] overflow-y-auto pr-1 custom-thin-scrollbar text-xs text-stone-700 font-sans font-semibold italic leading-snug tracking-tight">
                             "{item.caption}"
-                          </p>
+                          </div>
                         </div>
 
                         {/* Interactive reaction buttons and Admin controls */}
