@@ -76,7 +76,7 @@ export interface RedSocialAliado {
 
 export interface EvidenciaMedia {
   id: string;
-  tipo: 'youtube' | 'imagen' | 'video_archivo';
+  tipo: 'youtube' | 'video_url' | 'imagen' | 'video_archivo';
   url: string;
   descripcion: string;
 }

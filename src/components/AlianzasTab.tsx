@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Handshake,
@@ -39,14 +39,14 @@ interface Props {
 
 interface DraftEvidencia {
   id: string;
-  tipo: 'youtube' | 'imagen' | 'video_archivo';
+  tipo: 'youtube' | 'video_url' | 'imagen' | 'video_archivo';
   url: string;
   file?: File | null;
   descripcion: string;
 }
 
-function getEmbedVideoUrl(url: string): string | null {
-  if (!url) return null;
+function getVideoInfo(url: string) {
+  if (!url) return { isEmbeddable: false, embedUrl: null, platformName: 'Video', rawUrl: '' };
   const cleanUrl = url.trim();
 
   // YouTube watch
@@ -54,7 +54,7 @@ function getEmbedVideoUrl(url: string): string | null {
     try {
       const parsed = new URL(cleanUrl);
       const v = parsed.searchParams.get('v');
-      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (v) return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${v}`, platformName: 'YouTube', rawUrl: cleanUrl };
     } catch (e) {}
   }
   // YouTube short link
@@ -62,12 +62,24 @@ function getEmbedVideoUrl(url: string): string | null {
     const parts = cleanUrl.split('youtu.be/');
     if (parts[1]) {
       const id = parts[1].split('?')[0].split('&')[0];
-      return `https://www.youtube.com/embed/${id}`;
+      return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${id}`, platformName: 'YouTube', rawUrl: cleanUrl };
     }
   }
   // YouTube embed direct
   if (cleanUrl.includes('youtube.com/embed/')) {
-    return cleanUrl;
+    return { isEmbeddable: true, embedUrl: cleanUrl, platformName: 'YouTube', rawUrl: cleanUrl };
+  }
+
+  // Vimeo
+  if (cleanUrl.includes('vimeo.com/')) {
+    const vimeoReg = /vimeo\.com\/(?:video\/)?([0-9]+)/;
+    const match = cleanUrl.match(vimeoReg);
+    if (match && match[1]) {
+      return { isEmbeddable: true, embedUrl: `https://player.vimeo.com/video/${match[1]}`, platformName: 'Vimeo', rawUrl: cleanUrl };
+    }
+  }
+  if (cleanUrl.includes('player.vimeo.com/video/')) {
+    return { isEmbeddable: true, embedUrl: cleanUrl, platformName: 'Vimeo', rawUrl: cleanUrl };
   }
 
   // Google Drive
@@ -75,11 +87,31 @@ function getEmbedVideoUrl(url: string): string | null {
     const parts = cleanUrl.split('/file/d/');
     if (parts[1]) {
       const fileId = parts[1].split('/')[0];
-      return `https://drive.google.com/file/d/${fileId}/preview`;
+      return { isEmbeddable: true, embedUrl: `https://drive.google.com/file/d/${fileId}/preview`, platformName: 'Google Drive', rawUrl: cleanUrl };
     }
   }
 
-  return cleanUrl;
+  // TikTok
+  if (cleanUrl.includes('tiktok.com')) {
+    return { isEmbeddable: false, embedUrl: null, platformName: 'TikTok', rawUrl: cleanUrl };
+  }
+
+  // Facebook
+  if (cleanUrl.includes('facebook.com') || cleanUrl.includes('fb.watch')) {
+    return { isEmbeddable: false, embedUrl: null, platformName: 'Facebook', rawUrl: cleanUrl };
+  }
+
+  // Instagram
+  if (cleanUrl.includes('instagram.com') || cleanUrl.includes('instagr.am')) {
+    return { isEmbeddable: false, embedUrl: null, platformName: 'Instagram', rawUrl: cleanUrl };
+  }
+
+  // Twitter/X
+  if (cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com')) {
+    return { isEmbeddable: false, embedUrl: null, platformName: 'X (Twitter)', rawUrl: cleanUrl };
+  }
+
+  return { isEmbeddable: false, embedUrl: null, platformName: 'Video Enlace', rawUrl: cleanUrl };
 }
 
 interface MediaSliderProps {
@@ -89,6 +121,16 @@ interface MediaSliderProps {
 
 function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!evidencias || evidencias.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % evidencias.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [evidencias?.length]);
 
   if (!evidencias || evidencias.length === 0) {
     return (
@@ -111,7 +153,8 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
 
   const activeIndex = currentIndex >= evidencias.length ? 0 : currentIndex;
   const activeItem = evidencias[activeIndex];
-  const embedUrl = activeItem?.tipo === 'youtube' ? getEmbedVideoUrl(activeItem.url) : null;
+  const isVideoUrl = activeItem?.tipo === 'youtube' || activeItem?.tipo === 'video_url';
+  const videoInfo = isVideoUrl && activeItem.url ? getVideoInfo(activeItem.url) : null;
 
   return (
     <div className="space-y-2">
@@ -125,18 +168,41 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
           >
-            {activeItem.tipo === 'youtube' && (
-              embedUrl ? (
+            {isVideoUrl && (
+              videoInfo?.isEmbeddable && videoInfo.embedUrl ? (
                 <iframe
-                  src={embedUrl}
+                  src={videoInfo.embedUrl}
                   title={`Evidencia ${activeIndex + 1} de ${nombreAliado}`}
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
               ) : (
-                <div className="text-stone-400 font-mono text-xs text-center p-4">
-                  Enlace de YouTube no disponible
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950 text-center space-y-3 border border-emerald-500/20">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shadow-inner">
+                    <Video className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1 max-w-sm">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 inline-block">
+                      {videoInfo?.platformName || 'Video'}
+                    </span>
+                    <p className="text-xs text-slate-300 font-sans line-clamp-2">
+                      {activeItem.descripcion || `Ver video publicado en ${videoInfo?.platformName || 'la plataforma'}`}
+                    </p>
+                  </div>
+                  {activeItem.url ? (
+                    <a
+                      href={activeItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono font-bold text-xs px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-500/20 hover:scale-105 cursor-pointer"
+                    >
+                      <span>Ver Video en {videoInfo?.platformName || 'Plataforma'}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  ) : (
+                    <span className="text-xs font-mono text-stone-400">Enlace no disponible</span>
+                  )}
                 </div>
               )
             )}
@@ -202,10 +268,10 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
         {/* Type Badge */}
         <div className="absolute bottom-3 left-3 z-20 pointer-events-none">
           <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-slate-950/80 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-md flex items-center gap-1 backdrop-blur-xs">
-            {activeItem.tipo === 'youtube' && <Video className="w-3 h-3 text-red-400" />}
+            {isVideoUrl && <Video className="w-3 h-3 text-red-400" />}
             {activeItem.tipo === 'imagen' && <Image className="w-3 h-3 text-cyan-400" />}
             {activeItem.tipo === 'video_archivo' && <Play className="w-3 h-3 text-emerald-400" />}
-            {activeItem.tipo === 'youtube' ? 'YouTube' : activeItem.tipo === 'imagen' ? 'Imagen' : 'Video'}
+            {isVideoUrl ? (videoInfo?.platformName || 'Video') : activeItem.tipo === 'imagen' ? 'Imagen' : 'Video'}
             {' '}({activeIndex + 1}/{evidencias.length})
           </span>
         </div>
@@ -339,7 +405,7 @@ export default function AlianzasTab({
     setModalAliadoOpen(true);
   };
 
-  const handleAgregarEvidencia = (tipo: 'youtube' | 'imagen' | 'video_archivo' = 'youtube') => {
+  const handleAgregarEvidencia = (tipo: 'youtube' | 'video_url' | 'imagen' | 'video_archivo' = 'video_url') => {
     const nueva: DraftEvidencia = {
       id: `ev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       tipo,
@@ -431,13 +497,13 @@ export default function AlianzasTab({
       }
 
       const id = aliadoEditando ? aliadoEditando.id : `aliado-${Date.now()}`;
-      const primerYoutube = evidenciasProcesadas.find((e) => e.tipo === 'youtube');
+      const primerVideo = evidenciasProcesadas.find((e) => e.tipo === 'youtube' || e.tipo === 'video_url');
 
       const aliadoFinal: Aliado = {
         id,
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
-        videoUrl: primerYoutube ? primerYoutube.url : (videoUrl.trim() || ''),
+        videoUrl: primerVideo ? primerVideo.url : (videoUrl.trim() || ''),
         evidenciasMedia: evidenciasProcesadas,
         logoUrl: urlFinalLogo,
         redesSociales: redes,
@@ -893,11 +959,11 @@ export default function AlianzasTab({
                       <div className="flex flex-wrap gap-1.5">
                         <button
                           type="button"
-                          onClick={() => handleAgregarEvidencia('youtube')}
+                          onClick={() => handleAgregarEvidencia('video_url')}
                           className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition cursor-pointer"
                         >
                           <Video className="w-3 h-3" />
-                          <span>+ YouTube</span>
+                          <span>+ Link de Video</span>
                         </button>
                         <button
                           type="button"
@@ -920,7 +986,7 @@ export default function AlianzasTab({
 
                     {evidenciasDraft.length === 0 ? (
                       <p className="text-xs text-stone-400 font-mono italic bg-stone-50 p-3 rounded-xl border border-stone-200">
-                        No has agregado evidencias multimedia aún. Puedes subir fotos, archivos de video o enlaces de YouTube.
+                        No has agregado evidencias multimedia aún. Puedes subir fotos, archivos de video o enlaces de video (YouTube, Vimeo, TikTok, Facebook, Instagram, etc.).
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -931,7 +997,7 @@ export default function AlianzasTab({
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-mono font-bold text-emerald-800 text-[10px] uppercase bg-emerald-100 px-2 py-0.5 rounded-md">
-                                Evidencia #{idx + 1}: {ev.tipo === 'youtube' ? 'Link YouTube' : ev.tipo === 'imagen' ? 'Foto / Imagen' : 'Archivo de Video'}
+                                Evidencia #{idx + 1}: {(ev.tipo === 'youtube' || ev.tipo === 'video_url') ? 'Link de Video' : ev.tipo === 'imagen' ? 'Foto / Imagen' : 'Archivo de Video'}
                               </span>
 
                               <button
@@ -945,10 +1011,10 @@ export default function AlianzasTab({
                             </div>
 
                             {/* Input according to type */}
-                            {ev.tipo === 'youtube' ? (
+                            {(ev.tipo === 'youtube' || ev.tipo === 'video_url') ? (
                               <input
                                 type="url"
-                                placeholder="Ej. https://www.youtube.com/watch?v=..."
+                                placeholder="Ej. YouTube, Vimeo, TikTok, Facebook, Instagram..."
                                 value={ev.url}
                                 onChange={(e) => handleActualizarEvidencia(ev.id, 'url', e.target.value)}
                                 className="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono"
