@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: any;
+  }
+}
 import {
   Handshake,
   Plus,
@@ -54,7 +61,7 @@ function getVideoInfo(url: string) {
     try {
       const parsed = new URL(cleanUrl);
       const v = parsed.searchParams.get('v');
-      if (v) return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${v}`, platformName: 'YouTube', rawUrl: cleanUrl };
+      if (v) return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${v}?enablejsapi=1`, platformName: 'YouTube', rawUrl: cleanUrl };
     } catch (e) {}
   }
   // YouTube short link
@@ -62,12 +69,15 @@ function getVideoInfo(url: string) {
     const parts = cleanUrl.split('youtu.be/');
     if (parts[1]) {
       const id = parts[1].split('?')[0].split('&')[0];
-      return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${id}`, platformName: 'YouTube', rawUrl: cleanUrl };
+      return { isEmbeddable: true, embedUrl: `https://www.youtube.com/embed/${id}?enablejsapi=1`, platformName: 'YouTube', rawUrl: cleanUrl };
     }
   }
   // YouTube embed direct
   if (cleanUrl.includes('youtube.com/embed/')) {
-    return { isEmbeddable: true, embedUrl: cleanUrl, platformName: 'YouTube', rawUrl: cleanUrl };
+    const embedUrl = cleanUrl.includes('enablejsapi=1')
+      ? cleanUrl
+      : (cleanUrl.includes('?') ? `${cleanUrl}&enablejsapi=1` : `${cleanUrl}?enablejsapi=1`);
+    return { isEmbeddable: true, embedUrl, platformName: 'YouTube', rawUrl: cleanUrl };
   }
 
   // Vimeo
@@ -121,16 +131,108 @@ interface MediaSliderProps {
 
 function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % evidencias.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + evidencias.length) % evidencias.length);
+  };
+
+  // 1. Timer for photos and non-embedded video link cards
   useEffect(() => {
     if (!evidencias || evidencias.length <= 1) return;
 
+    const active = evidencias[currentIndex >= evidencias.length ? 0 : currentIndex];
+    if (!active) return;
+
+    const isVideoFile = active.tipo === 'video_archivo';
+    const isVideoUrl = active.tipo === 'youtube' || active.tipo === 'video_url';
+    const vInfo = isVideoUrl && active.url ? getVideoInfo(active.url) : null;
+    const isYouTubeEmbed = isVideoUrl && vInfo?.isEmbeddable && vInfo.platformName === 'YouTube';
+
+    // If active item is a video file or YouTube embed, auto-advance is handled when video finishes playing
+    if (isVideoFile || isYouTubeEmbed) {
+      return;
+    }
+
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % evidencias.length);
+      handleNext();
     }, 4500);
 
     return () => clearInterval(timer);
-  }, [evidencias?.length]);
+  }, [currentIndex, evidencias]);
+
+  // 2. YouTube API / postMessage listener to advance when YouTube video ends
+  useEffect(() => {
+    if (!evidencias || evidencias.length <= 1) return;
+
+    const active = evidencias[currentIndex >= evidencias.length ? 0 : currentIndex];
+    if (!active) return;
+
+    const isVideoUrl = active.tipo === 'youtube' || active.tipo === 'video_url';
+    const vInfo = isVideoUrl && active.url ? getVideoInfo(active.url) : null;
+    const isYouTubeEmbed = isVideoUrl && vInfo?.isEmbeddable && vInfo.platformName === 'YouTube';
+
+    if (!isYouTubeEmbed) return;
+
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        if (typeof e.data === 'string') {
+          const data = JSON.parse(e.data);
+          if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
+            handleNext();
+          }
+        }
+      } catch (err) {}
+    };
+    window.addEventListener('message', handleMessage);
+
+    let ytPlayer: any = null;
+
+    const initYTPlayer = () => {
+      if (window.YT && window.YT.Player && iframeRef.current) {
+        try {
+          ytPlayer = new window.YT.Player(iframeRef.current, {
+            events: {
+              onStateChange: (event: any) => {
+                if (event.data === 0) { // 0 = YT.PlayerState.ENDED
+                  handleNext();
+                }
+              }
+            }
+          });
+        } catch (e) {}
+      }
+    };
+
+    if (window.YT && window.YT.Player) {
+      initYTPlayer();
+    } else {
+      if (!document.getElementById('youtube-iframe-api-script')) {
+        const tag = document.createElement('script');
+        tag.id = 'youtube-iframe-api-script';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
+      }
+      const prevOnReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof prevOnReady === 'function') prevOnReady();
+        initYTPlayer();
+      };
+    }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+        try {
+          ytPlayer.destroy();
+        } catch (e) {}
+      }
+    };
+  }, [currentIndex, evidencias]);
 
   if (!evidencias || evidencias.length === 0) {
     return (
@@ -142,14 +244,6 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
       </div>
     );
   }
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + evidencias.length) % evidencias.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % evidencias.length);
-  };
 
   const activeIndex = currentIndex >= evidencias.length ? 0 : currentIndex;
   const activeItem = evidencias[activeIndex];
@@ -171,6 +265,7 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
             {isVideoUrl && (
               videoInfo?.isEmbeddable && videoInfo.embedUrl ? (
                 <iframe
+                  ref={iframeRef}
                   src={videoInfo.embedUrl}
                   title={`Evidencia ${activeIndex + 1} de ${nombreAliado}`}
                   className="w-full h-full"
@@ -219,6 +314,7 @@ function AliadoMediaSlider({ evidencias, nombreAliado }: MediaSliderProps) {
               <video
                 src={activeItem.url}
                 controls
+                onEnded={handleNext}
                 className="w-full h-full object-contain bg-black"
               />
             )}

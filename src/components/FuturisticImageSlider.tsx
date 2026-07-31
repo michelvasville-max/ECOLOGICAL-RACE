@@ -78,7 +78,7 @@ export default function FuturisticImageSlider() {
     <div className="space-y-4" id="slider-and-materials-block">
       {/* 1. THE SLIDER (WITHOUT DARK OVERLAYS / FILTERS OVER IMAGE) */}
       <div 
-        className="relative w-full h-[210px] md:h-[280px] bg-emerald-950 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 group/slider"
+        className="relative w-full h-[285px] md:h-[355px] bg-emerald-950 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-200 group/slider"
         id="futuristic-image-slider-container"
       >
         {/* Slide Images Container */}
