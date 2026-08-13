@@ -21,27 +21,28 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
 import { Institucion, Aula, RegistroSemanal, Comentario, IntegranteEquipo, ReaccionFoto, Aliado, Actividad } from '../types';
 import { ProyectoMetadata } from '../components/NuestroProyectoTab';
-
 // Valores por defecto provistos por AI Studio (pueden ser sobreescritos por variables .env)
 const env = (import.meta as any).env || {};
 
-export const isFirebaseConfigured = !!env.VITE_FIREBASE_API_KEY;
-
 const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || "",
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "",
-  projectId: env.VITE_FIREBASE_PROJECT_ID || "",
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: env.VITE_FIREBASE_APP_ID || ""
+  apiKey: env.VITE_FIREBASE_API_KEY || "AIzaSyAlHHd4ut12yNlZhCI7uDSoCiBZ_L8Hfqo",
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || "ecological-race.firebaseapp.com",
+  projectId: env.VITE_FIREBASE_PROJECT_ID || "ecological-race",
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || "ecological-race.firebasestorage.app",
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "268470350598",
+  appId: env.VITE_FIREBASE_APP_ID || "1:268470350598:web:5e846c81a68accbbfc6487"
 };
+
+const databaseId = env.VITE_FIREBASE_DATABASE_ID || "(default)";
+
+export const isFirebaseConfigured = !!(env.VITE_FIREBASE_API_KEY || firebaseConfig.apiKey);
 
 const app = initializeApp(firebaseConfig);
 
-// Inicializamos Firestore usando la base de datos "(default)" estándar con detección de long polling para entornos iFrame/Sandbox
+// Inicializamos Firestore usando la base de datos configurada con detección de long polling para entornos iFrame/Sandbox
 export const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
-});
+}, databaseId);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
@@ -187,7 +188,8 @@ export function escucharInstituciones(onUpdate: (data: Institucion[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharInstituciones (using fallback):", error);
+      console.warn("Firestore error in escucharInstituciones:", error);
+      handleFirestoreError(error, OperationType.GET, 'instituciones');
     }
   );
 }
@@ -202,7 +204,8 @@ export function escucharAulas(onUpdate: (data: Aula[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharAulas (using fallback):", error);
+      console.warn("Firestore error in escucharAulas:", error);
+      handleFirestoreError(error, OperationType.GET, 'aulas');
     }
   );
 }
@@ -219,7 +222,8 @@ export function escucharRegistros(onUpdate: (data: RegistroSemanal[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharRegistros (using fallback):", error);
+      console.warn("Firestore error in escucharRegistros:", error);
+      handleFirestoreError(error, OperationType.GET, 'registros');
     }
   );
 }
@@ -236,7 +240,7 @@ export function escucharComentarios(onUpdate: (data: Comentario[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharComentarios (using fallback):", error);
+      console.warn("Firestore error in escucharComentarios:", error);
       handleFirestoreError(error, OperationType.GET, 'comentarios');
     }
   );
@@ -252,7 +256,8 @@ export function escucharEquipo(onUpdate: (data: IntegranteEquipo[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharEquipo (using fallback):", error);
+      console.warn("Firestore error in escucharEquipo:", error);
+      handleFirestoreError(error, OperationType.GET, 'equipo');
     }
   );
 }
@@ -267,7 +272,8 @@ export function escucharAliados(onUpdate: (data: Aliado[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharAliados (using fallback):", error);
+      console.warn("Firestore error in escucharAliados:", error);
+      handleFirestoreError(error, OperationType.GET, 'aliados');
     }
   );
 }
@@ -283,7 +289,8 @@ export function escucharActividades(onUpdate: (data: Actividad[]) => void) {
       onUpdate(list);
     },
     (error) => {
-      console.warn("Firestore error in escucharActividades (using fallback):", error);
+      console.warn("Firestore error in escucharActividades:", error);
+      handleFirestoreError(error, OperationType.GET, 'actividades');
     }
   );
 }
