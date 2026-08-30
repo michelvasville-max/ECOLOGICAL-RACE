@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, Award, HelpCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Institucion, Aula } from '../types';
@@ -9,19 +9,37 @@ interface Props {
   onClose: () => void;
   instituciones: Institucion[];
   onGuardarAula: (aula: Aula) => Promise<void>;
+  aulaExistente?: Aula | null;
 }
 
-export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardarAula }: Props) {
-  const [institucionId, setInstitucionId] = useState(instituciones[0]?.id || '');
-  const [nombre, setNombre] = useState('');
-  const [raceCollector, setRaceCollector] = useState('');
-  const [slogan, setSlogan] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
+export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardarAula, aulaExistente }: Props) {
+  const [institucionId, setInstitucionId] = useState(aulaExistente?.institucionId || instituciones[0]?.id || '');
+  const [nombre, setNombre] = useState(aulaExistente?.nombre || '');
+  const [raceCollector, setRaceCollector] = useState(aulaExistente?.raceCollector || '');
+  const [slogan, setSlogan] = useState(aulaExistente?.slogan || '');
+  const [logoUrl, setLogoUrl] = useState(aulaExistente?.logoUrl || '');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragActive, setIsDragActive] = useState(false);
+
+  useEffect(() => {
+    if (aulaExistente) {
+      setInstitucionId(aulaExistente.institucionId || instituciones[0]?.id || '');
+      setNombre(aulaExistente.nombre || '');
+      setRaceCollector(aulaExistente.raceCollector || '');
+      setSlogan(aulaExistente.slogan || '');
+      setLogoUrl(aulaExistente.logoUrl || '');
+    } else {
+      setInstitucionId(instituciones[0]?.id || '');
+      setNombre('');
+      setRaceCollector('');
+      setSlogan('');
+      setLogoUrl('');
+    }
+    setError(null);
+  }, [aulaExistente, isOpen, instituciones]);
 
   if (!isOpen) return null;
 
@@ -80,8 +98,8 @@ export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardar
     }
 
     try {
-      const nuevaAula: Aula = {
-        id: `aula-${Date.now()}`,
+      const aulaAGuardar: Aula = {
+        id: aulaExistente ? aulaExistente.id : `aula-${Date.now()}`,
         institucionId,
         nombre: nombre.trim(),
         raceCollector: raceCollector.trim(),
@@ -89,10 +107,10 @@ export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardar
         logoUrl: logoUrl || undefined,
       };
 
-      await onGuardarAula(nuevaAula);
+      await onGuardarAula(aulaAGuardar);
       onClose();
     } catch (err) {
-      setError('Error al registrar el aula. Intenta de nuevo.');
+      setError(aulaExistente ? 'Error al actualizar el aula. Intenta de nuevo.' : 'Error al registrar el aula. Intenta de nuevo.');
     }
   };
 
@@ -110,7 +128,9 @@ export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardar
               <Award className="w-4 h-4 text-emerald-600" />
             </div>
             <div>
-              <h3 className="font-display font-black text-slate-900 text-base uppercase tracking-tight">Añadir Nueva Aula Competidora</h3>
+              <h3 className="font-display font-black text-slate-900 text-base uppercase tracking-tight">
+                {aulaExistente ? 'Editar Aula Competidora' : 'Añadir Nueva Aula Competidora'}
+              </h3>
               <p className="text-[10px] font-mono text-emerald-600 uppercase font-bold">Panel exclusivo de Administrador</p>
             </div>
           </div>
@@ -261,7 +281,7 @@ export default function AddAulaModal({ isOpen, onClose, instituciones, onGuardar
               disabled={uploading}
               className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-black uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-55"
             >
-              Registrar Aula
+              {aulaExistente ? 'Guardar Cambios' : 'Añadir Aula'}
             </button>
           </div>
         </form>

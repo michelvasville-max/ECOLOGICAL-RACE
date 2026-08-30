@@ -192,6 +192,7 @@ export default function App() {
   const [isAyudaModalOpen, setIsAyudaModalOpen] = useState(false);
   const [isDonacionesModalOpen, setIsDonacionesModalOpen] = useState(false);
   const [registroParaEditar, setRegistroParaEditar] = useState<RegistroSemanal | null>(null);
+  const [aulaParaEditar, setAulaParaEditar] = useState<Aula | null>(null);
 
   // --- FILTER STATE ---
   const [institucionFiltrada, setInstitucionFiltrada] = useState<string>('ie-82063');
@@ -437,6 +438,7 @@ export default function App() {
   const handleGuardarAula = async (nuevaAula: Aula) => {
     await guardarAula(nuevaAula);
     setIsAddAulaModalOpen(false);
+    setAulaParaEditar(null);
   };
 
   const handleGuardarMiembro = async (nuevoMiembro: IntegranteEquipo) => {
@@ -1082,7 +1084,10 @@ export default function App() {
 
                   {rolActual === 'ADMIN' && (
                     <button
-                      onClick={() => setIsAddAulaModalOpen(true)}
+                      onClick={() => {
+                        setAulaParaEditar(null);
+                        setIsAddAulaModalOpen(true);
+                      }}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-xs transition cursor-pointer flex items-center space-x-1"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -1105,6 +1110,12 @@ export default function App() {
                       stats={stats}
                       index={idx}
                       totalSchoolCO2={totalSchoolCO2}
+                      rolActual={rolActual}
+                      onEditar={(aula) => {
+                        setAulaParaEditar(aula);
+                        setIsAddAulaModalOpen(true);
+                      }}
+                      onEliminar={handleEliminarAula}
                     />
                   ))
                 )}
@@ -1373,9 +1384,13 @@ export default function App() {
         {isAddAulaModalOpen && (
           <AddAulaModal
             isOpen={isAddAulaModalOpen}
-            onClose={() => setIsAddAulaModalOpen(false)}
+            onClose={() => {
+              setIsAddAulaModalOpen(false);
+              setAulaParaEditar(null);
+            }}
             instituciones={instituciones}
             onGuardarAula={handleGuardarAula}
+            aulaExistente={aulaParaEditar}
           />
         )}
       </AnimatePresence>

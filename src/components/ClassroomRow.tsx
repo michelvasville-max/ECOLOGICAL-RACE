@@ -1,6 +1,7 @@
 import React from 'react';
 import { AulaStats } from './LeaderboardCompare';
-import { Award, Leaf, TrendingUp } from 'lucide-react';
+import { Aula } from '../types';
+import { Award, Leaf, TrendingUp, Edit, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import NeonLogo from './NeonLogo';
 
@@ -9,9 +10,12 @@ interface Props {
   stats: AulaStats;
   index: number;
   totalSchoolCO2: number;
+  rolActual?: string;
+  onEditar?: (aula: Aula) => void;
+  onEliminar?: (id: string) => void;
 }
 
-export default function ClassroomRow({ stats, index, totalSchoolCO2 }: Props) {
+export default function ClassroomRow({ stats, index, totalSchoolCO2, rolActual, onEditar, onEliminar }: Props) {
   const percentageOfTotal = totalSchoolCO2 > 0 ? (stats.totalCO2 / totalSchoolCO2) * 100 : 0;
   const isTop3 = index < 3;
 
@@ -118,6 +122,33 @@ export default function ClassroomRow({ stats, index, totalSchoolCO2 }: Props) {
             {stats.totalCO2.toFixed(1)} <span className="text-xs font-normal text-emerald-500">kg</span>
           </div>
         </div>
+
+        {rolActual === 'ADMIN' && (
+          <div className="flex items-center space-x-1.5 border-l border-slate-100 pl-4">
+            {onEditar && (
+              <button
+                type="button"
+                onClick={() => onEditar(stats.aula)}
+                className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 hover:border-emerald-300 transition cursor-pointer"
+                title="Editar Aula"
+                aria-label="Editar Aula"
+              >
+                <Edit className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {onEliminar && (
+              <button
+                type="button"
+                onClick={() => onEliminar(stats.aula.id)}
+                className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg border border-slate-200 hover:border-red-300 transition cursor-pointer"
+                title="Eliminar Aula"
+                aria-label="Eliminar Aula"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
