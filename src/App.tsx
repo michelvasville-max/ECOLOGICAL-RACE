@@ -164,7 +164,7 @@ export default function App() {
   const [aliados, setAliados] = useState<Aliado[]>([]);
   const [actividades, setActividades] = useState<Actividad[]>([]);
   const [proyectoMetadata, setProyectoMetadata] = useState<ProyectoMetadata>({
-    logoUrl: '/ecological_race_logo.svg',
+    logoUrl: '',
     mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
     vision: 'Ser reconocidos en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
     nombreProyecto: 'Ecological Race',
@@ -239,7 +239,7 @@ export default function App() {
     });
 
     const fallbackMetadata: ProyectoMetadata = {
-      logoUrl: '/ecological_race_logo.svg',
+      logoUrl: '',
       mision: 'Inculcar en la juventud escolar de Cajamarca una cultura activa de segregación de residuos sólidos y corresponsabilidad ecológica, canalizando el esfuerzo colectivo en un fondo común transparente que equipe a sus instituciones educativas con recursos que respondan a sus necesidades reales.',
       vision: 'Ser reconocidos en el norte del Perú como el modelo cooperativo-ecológico escolar más transparente, escalable y participativo, logrando que el reciclaje deje de ser una tarea aislada y se convierta en el pilar financiero de la infraestructura educativa y el desarrollo sostenible local.',
       nombreProyecto: 'Ecological Race',
@@ -262,7 +262,7 @@ export default function App() {
     const unsubMeta = escucharProyectoMetadata((data) => {
       setProyectoMetadata({
         ...data,
-        logoUrl: data.logoUrl || '/ecological_race_logo.svg'
+        logoUrl: data.logoUrl || ''
       });
     }, fallbackMetadata);
 
@@ -518,9 +518,7 @@ export default function App() {
             {proyectoMetadata.logoUrl ? (
               <NeonLogo src={proyectoMetadata.logoUrl} fallbackType="project" sizeClass="w-20 h-20" alt="Logo Ecological Race" />
             ) : (
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-emerald-100 flex items-center justify-center border border-emerald-300 shadow-inner shrink-0">
-                <Leaf className="w-8 h-8 md:w-10 md:h-10 text-emerald-600" />
-              </div>
+              <div className="w-20 h-20 shrink-0" />
             )}
             <div>
               <h1 className="text-3xl md:text-4xl font-black leading-none text-emerald-900 uppercase tracking-tighter font-display">
@@ -1300,7 +1298,11 @@ export default function App() {
           
           <div className="space-y-3">
             <div className="flex items-center space-x-2.5 text-white">
-              <NeonLogo src={proyectoMetadata.logoUrl} fallbackType="project" sizeClass="w-10 h-10" alt="Logo" />
+              {proyectoMetadata.logoUrl ? (
+                <NeonLogo src={proyectoMetadata.logoUrl} fallbackType="project" sizeClass="w-10 h-10" alt="Logo" />
+              ) : (
+                <div className="w-10 h-10 shrink-0" />
+              )}
               <span className="font-display font-black text-base tracking-tight">ECOLOGICAL RACE</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
